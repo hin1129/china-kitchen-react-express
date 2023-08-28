@@ -1,7 +1,7 @@
 import express from 'express'
 export const router = express.Router()
-import { body, validationResult } from 'express-validator'
 import User from '../models/user.model.js'
+import { body, validationResult } from 'express-validator'
 import bcrypt from 'bcryptjs'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'

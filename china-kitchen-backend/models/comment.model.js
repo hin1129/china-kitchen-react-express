@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import { body } from 'express-validator';
 
 const commentSchema = new mongoose.Schema({
     username: {
@@ -12,9 +11,9 @@ const commentSchema = new mongoose.Schema({
         type: Date, required: true
     },
     replyComments: [{
-        username: String,
-        replyDescription: String,
-        date: Date,
+        replyUsername: String,
+        replyCommentDescription: String,
+        replyDate: Date,
     }]
 }, { timestamps: true, }
 );
