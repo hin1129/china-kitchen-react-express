@@ -1,6 +1,7 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import MyHome from './components/MyHome';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import CommentList from './components/CommentList'
@@ -9,6 +10,8 @@ import SignUp from './components/SignUp';
 import SignIn from './components/SignIn';
 import EmailVerification from './components/EmailVerification';
 import Cookies from 'universal-cookie'
+import Takeaway from './components/Takeaway';
+import NavigationBar from './components/NavigationBar';
 
 function App() {
   const [logInState, setLogInState] = useState(false);
@@ -49,10 +52,13 @@ function App() {
 
   return (
     <div className="App">
-      <Header logInState={logInState} handleLogout={handleLogout} />
+      <NavigationBar logInState={logInState} handleLogout={handleLogout} />
+      <Header />
 
       <Routes>
-        <Route path="/" element={<CommentList logInState={logInState} />} />
+        <Route path='/' element={<MyHome />} />
+
+        <Route path="/commentlist" element={<CommentList logInState={logInState} />} />
 
         <Route
           path="/postcomment"
@@ -74,6 +80,8 @@ function App() {
             <SignIn setLogInState={setLogInState} />
           )}
         />
+
+        <Route path='/takeaway' element={<Takeaway />} />
       </Routes>
 
       <Footer />

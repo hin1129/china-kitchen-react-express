@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
+import Image from 'react-bootstrap/Image';
+import Row from 'react-bootstrap/Row';
 
-const Header = ({ logInState, handleLogout }) => {
+const Header = () => {
     const [currentTime, setCurrentTime] = useState(new Date())
 
     useEffect(() => {
@@ -14,24 +17,23 @@ const Header = ({ logInState, handleLogout }) => {
         return () => { clearInterval(interval) }
     }, [])
 
+    // background video/pic
     return (
-        <header>
-            <h1>China Kitchen</h1>
-            <h2>{currentTime.toLocaleTimeString()}</h2>
+        <>
+            <header>
+                <h1>China Kitchen</h1>
+                <h2>{currentTime.toLocaleTimeString()}</h2>
+            </header>
 
-            <Link to="/" >Home</Link><br />
-            {logInState ? (
-                <>
-                    <Link to="/postcomment">Post comment</Link><br />
-                    <button onClick={handleLogout}>Logout</button><br />
-                </>
-            ) : (
-                <>
-                    <Link to="/signup">Sign up</Link><br />
-                    <Link to="/signin">Sign in</Link>
-                </>
-            )}
-        </header>
+
+            {/* <Container>
+                <Row>
+                    <Col xs={6} md={4}>
+                        <Image src="../../public/brighton2.jpg" rounded />
+                    </Col>
+                </Row>
+            </Container> */}
+        </>
     )
 }
 

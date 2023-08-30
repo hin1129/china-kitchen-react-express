@@ -32,7 +32,18 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+/* (#id), (.class) */
+/* navbar */
+#basic-nav-dropdown {
+  background-color: rgb(217, 111, 36);
+}
+
+#dropdown-item-button {
+  color: rgb(217, 111, 36);
 }

@@ -31,7 +31,7 @@ const PostComment = () => {
             date: new Date().toISOString()
         }
         await submitCommentPostRequest(createCommentObject);
-        navigate('/')
+        navigate('/commentlist')
         console.log(createCommentObject)
     }
 
