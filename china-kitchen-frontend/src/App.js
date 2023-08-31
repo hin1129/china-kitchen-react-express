@@ -10,8 +10,9 @@ import SignUp from './components/SignUp';
 import SignIn from './components/SignIn';
 import EmailVerification from './components/EmailVerification';
 import Cookies from 'universal-cookie'
-import Takeaway from './components/Takeaway';
 import NavigationBar from './components/NavigationBar';
+import Takeaway from './components/Takeaway';
+import TakeawayChinese from './components/TakeawayChinese';
 
 function App() {
   const [logInState, setLogInState] = useState(false);
@@ -57,32 +58,47 @@ function App() {
 
       <Routes>
         <Route path='/' element={<MyHome />} />
-
         <Route path="/commentlist" element={<CommentList logInState={logInState} />} />
 
         <Route
           path="/postcomment"
-          element={logInState ? <PostComment /> : <Navigate to="/signin" />}
+          element={
+            logInState ? (
+              <PostComment />
+            ) : (
+              // <Navigate to="/signin" />
+              <SignIn />
+            )
+          }
         />
 
         <Route
           path="/signup"
-          element={logInState ? <Navigate to="/" /> : <SignUp />}
+          element={
+            logInState ? (
+              <Navigate to="/" />
+            ) : (
+              <SignUp />
+            )
+          }
         />
-
-        <Route path="/emailverification/:token" element={<EmailVerification />} />
 
         <Route
           path="/signin"
-          element={logInState ? (
-            <Navigate to="/" />
-          ) : (
-            <SignIn setLogInState={setLogInState} />
-          )}
+          element={
+            logInState ? (
+              <Navigate to="/" />
+            ) : (
+              <SignIn setLogInState={setLogInState} />
+            )
+          }
         />
 
+        <Route path="/emailverification/:token" element={<EmailVerification />} />
         <Route path='/takeaway' element={<Takeaway />} />
+        <Route path='/takeawaychinese' element={<TakeawayChinese />} />
       </Routes>
+
 
       <Footer />
     </div >

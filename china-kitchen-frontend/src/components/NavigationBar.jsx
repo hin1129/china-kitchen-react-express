@@ -21,7 +21,7 @@ const NavigationBar = ({ logInState, handleLogout }) => {
         // </div>
 
 
-        <Navbar className="bg-body-tertiary" expand="lg" Navbar sticky='top' bg="dark" data-bs-theme="dark" >
+        <Navbar className="bg-body-tertiary custom-navbar" collapseOnSelect expand="lg" Navbar sticky='top' bg="dark" data-bs-theme="dark" >
             <Container>
                 <Navbar.Brand href="/">
                     <img
@@ -35,42 +35,30 @@ const NavigationBar = ({ logInState, handleLogout }) => {
                 </Navbar.Brand>
 
                 {/* appear when minimized */}
-                <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                <Navbar.Toggle aria-controls="responsive-navbar-nav" />
 
-                <Navbar.Collapse id="basic-navbar-nav">
-                    <Nav className="me-auto">
+                <Navbar.Collapse id="responsive-navbar-nav">
+                    <Nav className="me-auto justify-content-between" >
                         <Nav.Link href="/">Home</Nav.Link>
                         <Nav.Link href='/takeaway'>Takeaway Menu</Nav.Link>
                         <Nav.Link href='/takeawaychinese'>Takeaway Chinese Menu</Nav.Link>
                         <Nav.Link href='/aboutus'>About Us</Nav.Link>
 
-                        <NavDropdown title="Comment" id="basic-nav-dropdown" align="end">
+                        <NavDropdown title="Comment" id="responsive-nav-dropdown" align="end">
                             <NavDropdown.Item href='/commentlist'>Comment list</NavDropdown.Item>
+
                             {logInState ? (
                                 <>
-                                    <NavLink to="/postcomment" className="dropdown-item">Post comment</NavLink>
+                                    <NavDropdown.Item href="/postcomment">postcomment</NavDropdown.Item>
                                     <NavDropdown.Divider />
-                                    <button onClick={handleLogout} className="dropdown-item" id='dropdown-item-button'>Logout</button>
-                                </>
-                            ) : (
-                                <>
-                                    <NavLink to="/signup" className="dropdown-item">Sign up</NavLink>
-                                    <NavLink to="/signin" className="dropdown-item">Sign in</NavLink>
-                                </>
-                            )}
-
-                            {/* {logInState ? (
-                                <>
-                                    <Link to="/postcomment" className="dropdown-item">Post comment</Link><br />
-                                    <NavDropdown.Divider />
-                                    <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
+                                    <NavDropdown.Item onClick={handleLogout} className="dropdown-item" id='dropdown-item-button'>Logout</NavDropdown.Item>
                                 </>
                             ) : (
                                 <>
                                     <NavDropdown.Item href="/signup">Sign up</NavDropdown.Item>
                                     <NavDropdown.Item href="/signin">Sign in</NavDropdown.Item>
                                 </>
-                            )} */}
+                            )}
                         </NavDropdown>
                     </Nav>
                 </Navbar.Collapse>
@@ -78,8 +66,6 @@ const NavigationBar = ({ logInState, handleLogout }) => {
 
             </Container>
         </Navbar>
-
-
     )
 }
 

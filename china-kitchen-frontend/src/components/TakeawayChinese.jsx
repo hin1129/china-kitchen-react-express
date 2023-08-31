@@ -1,222 +1,153 @@
 import React from 'react'
-import { Table, Row, Col, ListGroup } from 'react-bootstrap'
+import { Container, Table, Row, Col, ListGroup } from 'react-bootstrap'
 
 const TakeawayChinese = () => {
+
+    const categories = [
+        {
+            categoryName: "Appetisers",
+            items: [
+                { id: 1, name: "Mixed Hors D'oeuvres - For 2 people<br />(Dry Honey Spare Ribs, Prawn on Toast, Spring Rolls, Seaweed)", price: 10.00 },
+                { id: 2, name: "Mixed Vegetarian Platter", price: 9.00 },
+            ]
+        },
+        {
+            categoryName: "Soup",
+            items: [
+                { id: 26, name: "Won Ton Soup", price: 4.50 },
+                { id: 27, name: "Hot & Sour Soup", price: 4.00 },
+            ]
+        },
+    ];
+
+    const riceItems = ["Boiled rice", "Egg fried rice"];
+    const dishItems = [
+        "Deep Fried Chicken Katsu with Curry Sauce",
+        "Sweet & Sour Chicken Hong Kong Style",
+        "Roast Duck",
+        " Roast Pork",
+        "Pork with Green Pepper in Black Bean Sauce",
+        "Stir Fried Pork with Chilli",
+        "Salt & Pepper Pork",
+        "Scrambled Egg with Beef",
+        "Tomato Beef",
+        "Stir Fried Beef with Chilli",
+        "Beef with Black Pepper Sauce",
+        "Beef Brisket Hong Kong Style#",
+        "Sea Spicy Aubergines with Minced Pork",
+        "Mapo Tofu with Minced Beef",
+        "Double Cooked Pork Slices",
+    ];
+
+    const renderTableHeader = (category) => {
+        return <thead>
+            <h4>{category.categoryName}</h4>
+            <tr>
+                <th>Dish number</th>
+                <th>Dish name</th>
+                <th>Price (£)</th>
+            </tr>
+        </thead>
+    }
+    const renderCategoryTable = (category) => (
+        <Table key={category.categoryName} striped hover responsive>
+            {renderTableHeader(category)}
+            <tbody>
+                {category.items.map(item => (
+                    <tr key={item.id}>
+                        <td>{item.id}</td>
+                        <td dangerouslySetInnerHTML={{ __html: item.name }} />
+                        <td>{item.price}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </Table>
+    );
+
+    const mixAndMatchSection = () => {
+        let itemNumber = 137
+        return (
+            <>
+                <h3>Mix & Match</h3>
+                <Row>
+                    <Col>
+                        <ListGroup as="ul">
+                            <h4>Rice</h4>
+                            <p>Pick 1 of the below</p>
+                            {riceItems.map((item, index) => (
+                                <ListGroup.Item key={index} as="li">
+                                    {item}
+                                </ListGroup.Item>
+                            ))}
+                        </ListGroup>
+                    </Col>
+
+                    <Col>
+                        <ListGroup as="ol">
+                            <h4>Dishes</h4>
+                            <p>Combined with 1 of the below options</p>
+                            {dishItems.map((item, index) => (
+                                <ListGroup.Item key={index} as="li" >
+                                    {`${itemNumber++}. ${item}`}
+                                </ListGroup.Item>
+                            ))}
+                        </ListGroup>
+                    </Col>
+                </Row>
+                <hr />
+            </>
+        );
+    }
+
+    const setMeal = () => {
+        return <Table striped hover responsive bordered>
+            <thead>
+                <h4>Set Dinners</h4>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price (£)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>A</td>
+                    <td>For 1 person<br />Sweet & Sour Chicken Balls<br />Beef with Green Pepper in Black Bean Sauce<br />Egg Fried Rice</td>
+                    <td>10.80</td>
+                </tr>
+                <tr>
+                    <td>B</td>
+                    <td>For 2 persons<br />Satay Chicken on Skewers<br />Vegetarian Spring Rolls<br />Crispy Fried Shredded Chilli Beef<br />Sweet & Sour Pork Hong Kong Style<br />Chicken with Cashew Nuts<br />Special Fried Rice</td>
+                    <td>25.80</td>
+                </tr>
+                <tr>
+                    <td>C</td>
+                    <td>For 2 persons<br />Mixed Platter <br />Beef with Ginger & Spring Onions<br />Kong Po Chicken<br />Stir Fried Mixed Vegetables<br />Special Fried Rice</td>
+                    <td>26.80</td>
+                </tr>
+            </tbody>
+        </Table>;
+    }
+
     return (
-        <Row>
-            <Col sm={6}>
+        <Container>
+            <Row>
+                <Col>
+                    <h3>Menu</h3>
+                    {categories.map(category => renderCategoryTable(category))}
+                </Col>
 
-                <Table striped hover responsive>
+                <Col>
+                    {mixAndMatchSection()}
+                    <h4>Set Dinners</h4>
+                    {setMeal()}
+                </Col>
+            </Row>
 
-                    {/* Appetisers */}
-                    <thead>
-                        <h4>Appetisers</h4>
-                        <tr>
-                            <th>Dish number</th>
-                            <th>Dish name</th>
-                            <th>Price (£)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Mixed Hors D'oeuvres - For 2 people<br />(Dry Honey Spare Ribs, Prawn on Toast, Spring Rools, Seaweed)</td>
-                            <td>10.00</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>Mixed Vegetarian Platter - For 2 people<br />(Salt&Pepper Aubergine, Satay Bean Curd on Skewers, Spring Rools, Seaweed)</td>
-                            <td>9.00</td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>Crispy Seaweed</td>
-                            <td>4.60</td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td>Vegetarian Spring Roll</td>
-                            <td>3.00</td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td>Crispy Pancake Roll</td>
-                            <td>3.20</td>
-                        </tr>
-                        <tr>
-                            <td>6</td>
-                            <td>Mini Spring Roll</td>
-                            <td>3.00</td>
-                        </tr>
-                        <tr>
-                            <td>7</td>
-                            <td>Sesame Prawn on Toast</td>
-                            <td>5.40</td>
-                        </tr>
-                        <tr>
-                            <td>8</td>
-                            <td>Salt & Pepper Crispy Shredded Beef</td>
-                            <td>6.00</td>
-                        </tr>
-                        <tr>
-                            <td>9</td>
-                            <td>Satay Chicken on Skewers</td>
-                            <td>6.00</td>
-                        </tr>
-                        <tr>
-                            <td>10</td>
-                            <td>Satay Bean Curd on Skewers</td>
-                            <td>5.00</td>
-                        </tr>
-                        <tr>
-                            <td>11</td>
-                            <td>Barbecue Spare Ribs</td>
-                            <td>7.00</td>
-                        </tr>
-                        <tr>
-                            <td>12</td>
-                            <td>Korean Fried Chicken Wings</td>
-                            <td>6.00</td>
-                        </tr>
-                        <tr>
-                            <td>13</td>
-                            <td>Dry Honey Spare Ribs</td>
-                            <td>7.00</td>
-                        </tr>
-                        <tr>
-                            <td>14</td>
-                            <td>Salt & Pepper Spare Ribs</td>
-                            <td>7.00</td>
-                        </tr>
-                        <tr>
-                            <td>15</td>
-                            <td>Salt & Pepper King Prawns</td>
-                            <td>6.40</td>
-                        </tr>
-                        <tr>
-                            <td>16</td>
-                            <td>Salt & Pepper Squid</td>
-                            <td>6.30</td>
-                        </tr>
-                        <tr>
-                            <td>17</td>
-                            <td>Salt & Pepper Chicken</td>
-                            <td>5.50</td>
-                        </tr>
-                        <tr>
-                            <td>18</td>
-                            <td>Salt & Pepper Chicken Wings</td>
-                            <td>5.80</td>
-                        </tr>
-                        <tr>
-                            <td>19</td>
-                            <td>Salt & Pepper Aubergine</td>
-                            <td>5.00</td>
-                        </tr>
-                        <tr>
-                            <td>20</td>
-                            <td>Salt & Pepper Bean Curd</td>
-                            <td>5.00</td>
-                        </tr>
-                        <tr>
-                            <td>21</td>
-                            <td>Salt & Pepper Chips</td>
-                            <td>4.50</td>
-                        </tr>
-                        <tr>
-                            <td>22</td>
-                            <td>Grilled Pork Dumpings</td>
-                            <td>5.80</td>
-                        </tr>
-                        <tr>
-                            <td>23</td>
-                            <td>Crispy Chicken Gyoza</td>
-                            <td>5.60</td>
-                        </tr>
-                        <tr>
-                            <td>24</td>
-                            <td>Prawn Crackers</td>
-                            <td>2.60</td>
-                        </tr>
-                        <tr>
-                            <td>25</td>
-                            <td>Crispy Vegetarian Gyoza</td>
-                            <td>5.40</td>
-                        </tr>
-                    </tbody>
-                </Table >
-
-                <Table striped hover responsive>
-                    {/* Soup */}
-                    <thead>
-                        <h4>Soup</h4>
-                        <tr>
-                            <th>Dish number</th>
-                            <th>Dish name</th>
-                            <th>Price (£)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>26</td>
-                            <td>Won Ton Soup</td>
-                            <td>4.50</td>
-                        </tr>
-                        <tr>
-                            <td>27</td>
-                            <td>Hot & Sour Soup</td>
-                            <td>4.00</td>
-                        </tr>
-                        <tr>
-                            <td>28</td>
-                            <td>Chicken & Sweetcorn Soup</td>
-                            <td>4.00</td>
-                        </tr>
-                        <tr>
-                            <td>29</td>
-                            <td>Chicken & Mushroom Soup</td>
-                            <td>4.00</td>
-                        </tr>
-                        <tr>
-                            <td>30</td>
-                            <td>Chicken & Noodle Soup</td>
-                            <td>4.00</td>
-                        </tr>
-                    </tbody>
-                </Table >
-
-                <Table striped hover responsive>
-                    {/* Duck */}
-                    <thead>
-                        <h4>Duck</h4>
-                        <tr>
-                            <th>Dish number</th>
-                            <th>Dish name</th>
-                            <th>Price (£)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>31</td>
-                            <td>Crispy Aromatic Duck<br />(Served with Pancakes, Cucumbers,<br /> Spring Onion, Hoi Sin Sauce)<br />Quarter (with 6 Pancakes)<br />Half (with 12 Pancakes)</td>
-                            <td><br /><br /><br />10.00<br />19.00</td>
-                        </tr>
-                        <tr>
-                            <td>32</td>
-                            <td>Roast Duck Cantonese Style</td>
-                            <td>7.20</td>
-                        </tr>
-                        <tr>
-                            <td>33</td>
-                            <td>Stir Fried Duck with Special Soy Sauce</td>
-                            <td>7.20</td>
-                        </tr>
-                    </tbody>
-                </Table>
-
-            </Col>
-        </Row >
+            <hr />
+        </Container>
     )
+
 }
 
 export default TakeawayChinese
