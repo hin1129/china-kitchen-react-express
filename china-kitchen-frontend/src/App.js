@@ -66,8 +66,8 @@ function App() {
             logInState ? (
               <PostComment />
             ) : (
-              // <Navigate to="/signin" />
-              <SignIn />
+              <Navigate to="/signin" />
+              // <SignIn />
             )
           }
         />
@@ -98,7 +98,6 @@ function App() {
         <Route path='/takeaway' element={<Takeaway />} />
         <Route path='/takeawaychinese' element={<TakeawayChinese />} />
       </Routes>
-
 
       <Footer />
     </div >

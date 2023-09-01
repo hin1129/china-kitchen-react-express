@@ -25,7 +25,6 @@ const Header = () => {
                 <h2>{currentTime.toLocaleTimeString()}</h2>
             </header>
 
-
             {/* <Container>
                 <Row>
                     <Col xs={6} md={4}>
