@@ -1,153 +1,156 @@
-import React from 'react'
-import { Container, Table, Row, Col, ListGroup } from 'react-bootstrap'
+import React, { useState } from 'react';
+import { Container, Row, Col, Table } from 'react-bootstrap';
+import MixAndMatchSection from './MixAndMatchSection';
 
 const TakeawayChinese = () => {
+    // Mix & Match Dishes
+    const dishItems = [
+        { id: 137, name: "Deep Fried Chicken Katsu with Curry Sauce" },
+        { id: 138, name: "Sweet & Sour Chicken Hong Kong Style" },
+        { id: 139, name: "Roast Duck" },
+    ];
 
-    const categories = [
+    // Rice Options
+    const riceItems = [
+        { id: 'A', name: "Boiled Rice" },
+        { id: 'B', name: "Egg Fried Rice" },
+    ];
+
+    // Set Meals
+    const setMealCategory = {
+        categoryName: "Set Meals",
+        items: [
+            { id: "A", name: "For 1 Person: Sweet & Sour Chicken Balls, Beef with Green Pepper, Egg Fried Rice", price: 10.80 },
+            { id: "B", name: "For 2 Persons: Satay Chicken, Vegetarian Rolls, Crispy Beef, Sweet & Sour Pork, Chicken with Cashew, Special Fried Rice", price: 25.80 },
+            { id: "C", name: "For 2 Persons: Mixed Vegetarian Platter, Beef with Ginger, Kong Po Chicken, Stir Fried Vegetables, Special Fried Rice", price: 26.80 },
+        ],
+    };
+
+    // Appetisers & Soups
+    const otherCategories = [
         {
             categoryName: "Appetisers",
             items: [
-                { id: 1, name: "Mixed Hors D'oeuvres - For 2 people<br />(Dry Honey Spare Ribs, Prawn on Toast, Spring Rolls, Seaweed)", price: 10.00 },
-                { id: 2, name: "Mixed Vegetarian Platter", price: 9.00 },
-            ]
+                { id: 101, name: "Spring Rolls (2 pcs)", price: 3.50 },
+                { id: 102, name: "Satay Chicken on Skewers (4 pcs)", price: 5.50 },
+            ],
         },
         {
-            categoryName: "Soup",
+            categoryName: "Soups",
             items: [
-                { id: 26, name: "Won Ton Soup", price: 4.50 },
-                { id: 27, name: "Hot & Sour Soup", price: 4.00 },
-            ]
+                { id: 201, name: "Hot & Sour Soup", price: 4.00 },
+                { id: 202, name: "Chicken & Sweetcorn Soup", price: 3.80 },
+            ],
         },
     ];
 
-    const riceItems = ["Boiled rice", "Egg fried rice"];
-    const dishItems = [
-        "Deep Fried Chicken Katsu with Curry Sauce",
-        "Sweet & Sour Chicken Hong Kong Style",
-        "Roast Duck",
-        " Roast Pork",
-        "Pork with Green Pepper in Black Bean Sauce",
-        "Stir Fried Pork with Chilli",
-        "Salt & Pepper Pork",
-        "Scrambled Egg with Beef",
-        "Tomato Beef",
-        "Stir Fried Beef with Chilli",
-        "Beef with Black Pepper Sauce",
-        "Beef Brisket Hong Kong Style#",
-        "Sea Spicy Aubergines with Minced Pork",
-        "Mapo Tofu with Minced Beef",
-        "Double Cooked Pork Slices",
-    ];
+    const [selectedMixAndMatch, setSelectedMixAndMatch] = useState([]);
 
-    const renderTableHeader = (category) => {
-        return <thead>
-            <h4>{category.categoryName}</h4>
+    // Handle dish quantity selection
+    const handleDishQuantitySelect = (quantity, dishId) => {
+        setSelectedMixAndMatch((prev) => {
+            const existingDish = prev.find((item) => item.dishId === dishId);
+
+            if (quantity > 0) {
+                if (existingDish) {
+                    // Preserve existing rice selections, filling missing spots with ''
+                    const newRiceSelections = [
+                        ...existingDish.riceSelections.slice(0, quantity),
+                        ...Array(Math.max(0, quantity - existingDish.riceSelections.length)).fill('')
+                    ];
+
+                    return prev.map((item) =>
+                        item.dishId === dishId ? { ...item, quantity, riceSelections: newRiceSelections } : item
+                    );
+                } else {
+                    return [...prev, { dishId, quantity, riceSelections: Array(quantity).fill('') }];
+                }
+            } else {
+                return prev.filter((item) => item.dishId !== dishId);
+            }
+        });
+    };
+
+    // Handle selecting rice for each portion
+    const handleRiceItemSelectForDishItem = (dishId, portionIndex, riceType) => {
+        setSelectedMixAndMatch((prev) =>
+            prev.map((item) =>
+                item.dishId === dishId
+                    ? {
+                        ...item,
+                        riceSelections: item.riceSelections.map((rice, index) =>
+                            index === portionIndex ? riceType : rice
+                        ),
+                    }
+                    : item
+            )
+        );
+    };
+
+    // Render Table Header
+    const renderTableHeader = (category) => (
+        <thead key={category.categoryName}>
             <tr>
-                <th>Dish number</th>
-                <th>Dish name</th>
+                <th>Dish Number</th>
+                <th>Dish Name</th>
                 <th>Price (£)</th>
+                <th>Quantity</th>
             </tr>
         </thead>
-    }
-    const renderCategoryTable = (category) => (
-        <Table key={category.categoryName} striped hover responsive>
-            {renderTableHeader(category)}
-            <tbody>
-                {category.items.map(item => (
-                    <tr key={item.id}>
-                        <td>{item.id}</td>
-                        <td dangerouslySetInnerHTML={{ __html: item.name }} />
-                        <td>{item.price}</td>
-                    </tr>
-                ))}
-            </tbody>
-        </Table>
     );
 
-    const mixAndMatchSection = () => {
-        let itemNumber = 137
-        return (
-            <>
-                <h3>Mix & Match</h3>
-                <Row>
-                    <Col>
-                        <ListGroup as="ul">
-                            <h4>Rice</h4>
-                            <p>Pick 1 of the below</p>
-                            {riceItems.map((item, index) => (
-                                <ListGroup.Item key={index} as="li">
-                                    {item}
-                                </ListGroup.Item>
-                            ))}
-                        </ListGroup>
-                    </Col>
-
-                    <Col>
-                        <ListGroup as="ol">
-                            <h4>Dishes</h4>
-                            <p>Combined with 1 of the below options</p>
-                            {dishItems.map((item, index) => (
-                                <ListGroup.Item key={index} as="li" >
-                                    {`${itemNumber++}. ${item}`}
-                                </ListGroup.Item>
-                            ))}
-                        </ListGroup>
-                    </Col>
-                </Row>
-                <hr />
-            </>
-        );
-    }
-
-    const setMeal = () => {
-        return <Table striped hover responsive bordered>
-            <thead>
-                <h4>Set Dinners</h4>
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Price (£)</th>
+    // Render Table Body
+    const renderTableBody = (category) => (
+        <tbody>
+            {category.items.map((item) => (
+                <tr key={item.id}>
+                    <td>{item.id}</td>
+                    <td>{item.name}</td>
+                    <td>{item.price.toFixed(2)}</td>
+                    <td>
+                        <input
+                            type="number"
+                            min="0"
+                            defaultValue="0"
+                        />
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>A</td>
-                    <td>For 1 person<br />Sweet & Sour Chicken Balls<br />Beef with Green Pepper in Black Bean Sauce<br />Egg Fried Rice</td>
-                    <td>10.80</td>
-                </tr>
-                <tr>
-                    <td>B</td>
-                    <td>For 2 persons<br />Satay Chicken on Skewers<br />Vegetarian Spring Rolls<br />Crispy Fried Shredded Chilli Beef<br />Sweet & Sour Pork Hong Kong Style<br />Chicken with Cashew Nuts<br />Special Fried Rice</td>
-                    <td>25.80</td>
-                </tr>
-                <tr>
-                    <td>C</td>
-                    <td>For 2 persons<br />Mixed Platter <br />Beef with Ginger & Spring Onions<br />Kong Po Chicken<br />Stir Fried Mixed Vegetables<br />Special Fried Rice</td>
-                    <td>26.80</td>
-                </tr>
-            </tbody>
-        </Table>;
-    }
+            ))}
+        </tbody>
+    );
 
     return (
         <Container>
             <Row>
+                {/* Other Categories (Appetisers, Soups) */}
                 <Col>
-                    <h3>Menu</h3>
-                    {categories.map(category => renderCategoryTable(category))}
+                    {otherCategories.map(category => (
+                        <Table key={category.categoryName} striped hover responsive>
+                            {renderTableHeader(category)}
+                            {renderTableBody(category)}
+                        </Table>
+                    ))}
                 </Col>
 
                 <Col>
-                    {mixAndMatchSection()}
-                    <h4>Set Dinners</h4>
-                    {setMeal()}
+                    <h3>Mix & Match</h3>
+                    <MixAndMatchSection
+                        selectedMixAndMatch={selectedMixAndMatch}
+                        dishItems={dishItems}
+                        riceItems={riceItems}
+                        handleDishQuantitySelect={handleDishQuantitySelect}
+                        handleRiceItemSelectForDishItem={handleRiceItemSelectForDishItem}
+                    />
+
+                    <h3>{setMealCategory.categoryName}</h3>
+                    <Table striped hover responsive>
+                        {renderTableHeader(setMealCategory)}
+                        {renderTableBody(setMealCategory)}
+                    </Table>
                 </Col>
             </Row>
-
-            <hr />
         </Container>
-    )
+    );
+};
 
-}
-
-export default TakeawayChinese
+export default TakeawayChinese;
