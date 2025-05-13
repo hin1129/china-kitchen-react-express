@@ -22,8 +22,15 @@ router.post('/signup', [
         .matches(/\d/).withMessage('password must contain at least 1 number')
         .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('password must contain at least 1 symbol')
 ], async (request, response) => {
+    // debugging
+    console.log(' Incoming signup request:');
+    console.log(request.body);
+    // debugging
+
     const errors = validationResult(request)
     if (!errors.isEmpty) {
+        console.log('Validation errors:', errors.array()); // Add this line
+
         return (response.status(400).json({ errors: errors.array() }))
     }
 
@@ -36,6 +43,8 @@ router.post('/signup', [
         const isEmailExist = await User.findOne({ email });
         const isUsernameExist = await User.findOne({ username });
 
+        console.log('Checking if email or username exists...'); // Add this line
+
         if (isEmailExist) {
             return response.status(400).json({ error: 'Email already exists' });
         }
@@ -46,6 +55,8 @@ router.post('/signup', [
 
         // apply hash
         const hashedPassword = await bcrypt.hash(password, 10);
+        console.log(' Hashed password:', hashedPassword); // Add this line
+
 
         const newUser = new User({
             fullName,
@@ -63,6 +74,9 @@ router.post('/signup', [
             // { expiresIn: '10' }, // 10secs
         );
 
+        console.log(' Verification Token:', verificationToken); // Add this line
+
+
         // assign to user property
         newUser.emailVerificationToken = verificationToken;
         await newUser.save();
@@ -70,7 +84,16 @@ router.post('/signup', [
         sendVerificationEmail(email, verificationToken)
         response.json('user account added');
     }
+
+
+    // // debugging- before
+    // catch (error) {
+    //     response.status(400).json('error: ' + error);
+    // }
+
+    // debugging
     catch (error) {
+        console.log(' Signup error:', error); // Add this line
         response.status(400).json('error: ' + error);
     }
 });

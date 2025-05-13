@@ -14,18 +14,29 @@ const SignIn = ({ setLogInState }) => {
 
     const submitSignUpPostRequest = async (user) => {
         try {
-            const response = await axios.post("http://localhost:8000/signin", (user))
+            console.log("Sending request with payload:", user); // debugging, Log the payload
+
+            const response = await axios.post("http://localhost:8000/signin", (user), {
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                // withCredentials: true, // debugging, did not have this line of code before
+            })
+
+            console.log("Response Data:", response.data); // debugging, Log the full response data
             return (response.data)
         }
         catch (error) {
             alert(`SignIn - handleSignIn`)
-            console.log(error)
-            throw error
+            console.log("Error during sign-in request:", error) // debugging, Log the error details
+            throw error;
         }
     }
 
     const handleSignIn = async (event) => {
         event.preventDefault();
+        // debugging, log the sign-in payload for debugging
+        console.log("SIGNIN PAYLOAD", { email, password });
 
         // validation
         const validationErrors = {};
@@ -39,7 +50,7 @@ const SignIn = ({ setLogInState }) => {
             const trimmedPassword = password.trim();
             const user = { email: trimmedEmail, password: trimmedPassword }
             const responseData = await submitSignUpPostRequest(user)
-            console.log(responseData)
+            console.log("Received Response:", responseData) // debugging, log the response data from the backend
 
             // // token in header
             // const headerToken = responseData.headers['authorization'].split(' ')[1]
@@ -65,7 +76,7 @@ const SignIn = ({ setLogInState }) => {
         }
         catch (error) {
             alert(`SignIn - handleSignIn`)
-            console.log(error)
+            console.log("Error during sign-in:", error)  // debugging, log any errors that occur
 
             if (error?.response?.status === 404) {
                 setErrors({ email: 'Email does not exist', password: '' });

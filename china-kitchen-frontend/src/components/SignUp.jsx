@@ -62,8 +62,8 @@ const SignUp = () => {
             validationErrors.email = "Not a valid email"
         }
 
-        if (password.length < 6 || password.length > 40) {
-            validationErrors.password = "Password must be between 6-40 characters";
+        if (password.length < 8 || password.length > 40) {
+            validationErrors.password = "Password must be between 8-40 characters";
         }
         else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[A-Za-z\d!@#$%^&*()]/.test(password)) {
             validationErrors.password = "Password must include at least 1 upper case letter, 1 lower case letter, 1 number, and 1 symbol";

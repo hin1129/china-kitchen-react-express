@@ -6,10 +6,14 @@ dotenv.config();
 async function sendVerificationEmail(email, token) {
     // create transporter object, using default SMTP transport
     const transporter = nodemailer.createTransport({
-        service: 'Outlook',
+        // service: 'Outlook',
+        service: 'Gmail',
         auth: {
             user: process.env.EMAIL_USERNAME,
             pass: process.env.EMAIL_PASSWORD,
+        },
+        tls: {
+            rejectUnauthorized: false // <-- This line fixes the self-signed cert issue
         }
     })
 

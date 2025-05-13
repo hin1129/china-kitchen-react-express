@@ -29,11 +29,20 @@ main().catch(error => { console.log(error) })
 
 // express middleware to enable CORS, deal with CORS issues
 app.use(cors());
+// app.use(cors({
+//     origin: 'http://localhost:3000',
+//     credentials: true
+// }));
+
 // parse requests of content-type - application/json
 app.use(bodyParser.json());
+// app.use(express.json()); // 
+
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
+
+
 
 // routes
 app.use(`/`, comment);
