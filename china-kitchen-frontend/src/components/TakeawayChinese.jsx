@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Table } from 'react-bootstrap';
-import MixAndMatchSection from './MixAndMatchSection';
+import MixAndMatchSectionChinese from './MixAndMatchSectionChinese';
 
 const TakeawayChinese = () => {
     // Mix & Match Dishes
@@ -8,6 +8,7 @@ const TakeawayChinese = () => {
         { id: 137, name: "Deep Fried Chicken Katsu with Curry Sauce" },
         { id: 138, name: "Sweet & Sour Chicken Hong Kong Style" },
         { id: 139, name: "Roast Duck" },
+        { id: 140, name: "Roast Duck" },
     ];
 
     // Rice Options
@@ -134,7 +135,7 @@ const TakeawayChinese = () => {
 
                 <Col>
                     <h3>Mix & Match</h3>
-                    <MixAndMatchSection
+                    <MixAndMatchSectionChinese
                         selectedMixAndMatch={selectedMixAndMatch}
                         dishItems={dishItems}
                         riceItems={riceItems}

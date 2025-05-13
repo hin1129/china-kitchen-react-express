@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { Table, Form, Button } from "react-bootstrap";
 
-const MixAndMatchSection = ({ addToCart }) => {
+const MixAndMatchSectionChinese = ({ addToCart }) => {
     const [selectedDish, setSelectedDish] = useState({});
-    
+
     const dishes = [
         { id: 1, name: "Sweet & Sour Chicken", price: 5.99 },
         { id: 2, name: "Beef in Black Bean Sauce", price: 6.49 },
     ];
-    
+
     const riceOptions = ["Boiled Rice", "Egg Fried Rice"];
 
     const handleQuantityChange = (id, quantity) => {
@@ -84,4 +84,4 @@ const MixAndMatchSection = ({ addToCart }) => {
     );
 };
 
-export default MixAndMatchSection;
+export default MixAndMatchSectionChinese;
