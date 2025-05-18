@@ -13,6 +13,7 @@ import Cookies from 'universal-cookie'
 import NavigationBar from './components/NavigationBar';
 import Takeaway from './components/Takeaway';
 import TakeawayChinese from './components/TakeawayChinese';
+import ShoppingCart from './components/ShoppingCart';
 
 function App() {
   const [logInState, setLogInState] = useState(false);
@@ -97,6 +98,18 @@ function App() {
         <Route path="/emailverification/:token" element={<EmailVerification />} />
         <Route path='/takeaway' element={<Takeaway />} />
         <Route path='/takeawaychinese' element={<TakeawayChinese />} />
+
+        {/* <Route path='shoppingcart' element={<ShoppingCart />} /> */}
+        <Route
+          path="/shoppingcart"
+          element={
+            logInState ? (
+              <Navigate to="/" />
+            ) : (
+              <SignIn setLogInState={setLogInState} />
+            )
+          }
+        />
       </Routes>
 
       <Footer />

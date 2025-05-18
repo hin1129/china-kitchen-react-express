@@ -25,13 +25,13 @@ const NavigationBar = ({ logInState, handleLogout }) => {
             <Container>
                 <Navbar.Brand href="/">
                     <img
-                        src="../../public/logo192.png"
-                        alt="Logo"
+                        src="../public/logo192.png"
+                        alt="Logo?"
                         width="30"
                         height="30"
                         className="d-inline-block align-top"
                     />
-                    Logo
+                    {/* Logo */}
                 </Navbar.Brand>
 
                 {/* appear when minimized */}
@@ -48,9 +48,10 @@ const NavigationBar = ({ logInState, handleLogout }) => {
                         <NavLink to="/takeaway" className="nav-link">Takeaway  Menu</NavLink>
                         <NavLink to="/takeawaychinese" className="nav-link">Takeaway Chinese Menu</NavLink>
                         <NavLink to="/aboutus" className="nav-link">About Us</NavLink>
+                        <NavLink to="/commentlist" className="nav-link">Comment list</NavLink>
 
 
-                        <NavDropdown title="Comment" id="responsive-nav-dropdown" align="end">
+                        <NavDropdown title="Account" id="responsive-nav-dropdown" align="end">
                             {/* <NavDropdown.Item href='/commentlist'>Comment list</NavDropdown.Item>
                             {logInState ? (
                                 <>
@@ -65,13 +66,15 @@ const NavigationBar = ({ logInState, handleLogout }) => {
                                 </>
                             )} */}
 
-                            <NavLink to="/commentlist" className="nav-link">Comment list</NavLink>
+                            {/* <NavLink to="/commentlist" className="nav-link">Comment list</NavLink> */}
                             {logInState ? (
                                 <>
                                     <NavLink to="/postcomment" className="nav-link">Post comment</NavLink>
+                                    <NavLink to="/shoppingchart" className="nav-link">Shopping Cart</NavLink>
                                     <NavDropdown.Divider />
                                     <NavLink onClick={handleLogout} className="nav-link" id='dropdown-item-button'>Logout</NavLink>
                                     {/* <button onClick={handleLogout} id='dropdown-item-button'>Logout</button><br /> */}
+
                                 </>
                             ) : (
                                 <>
@@ -79,6 +82,8 @@ const NavigationBar = ({ logInState, handleLogout }) => {
                                     <NavLink to="/signin" className="nav-link">Sign in</NavLink>
                                 </>
                             )}
+
+                            {/* <NavLink to="/shoppingchart" className="nav-link">Shopping Cart</NavLink> */}
                         </NavDropdown>
 
 

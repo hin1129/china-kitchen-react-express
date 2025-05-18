@@ -1,87 +1,61 @@
-import React, { useState } from "react";
-import { Table, Form, Button } from "react-bootstrap";
+import React from 'react';
+import { Table, Button, Form } from 'react-bootstrap';
 
-const MixAndMatchSectionChinese = ({ addToCart }) => {
-    const [selectedDish, setSelectedDish] = useState({});
-
-    const dishes = [
-        { id: 1, name: "Sweet & Sour Chicken", price: 5.99 },
-        { id: 2, name: "Beef in Black Bean Sauce", price: 6.49 },
-    ];
-
-    const riceOptions = ["Boiled Rice", "Egg Fried Rice"];
-
-    const handleQuantityChange = (id, quantity) => {
-        setSelectedDish({ ...selectedDish, [id]: { ...selectedDish[id], quantity } });
-    };
-
-    const handleRiceSelect = (id, rice) => {
-        setSelectedDish({ ...selectedDish, [id]: { ...selectedDish[id], riceOption: rice } });
-    };
-
-    const handleAddToCart = (dish) => {
-        if (selectedDish[dish.id]?.quantity > 0 && selectedDish[dish.id]?.riceOption) {
-            addToCart({
-                id: dish.id,
-                dishName: dish.name,
-                quantity: selectedDish[dish.id].quantity,
-                riceOption: selectedDish[dish.id].riceOption,
-            });
-        } else {
-            alert("Please select quantity and rice option.");
-        }
-    };
-
+function MixAndMatchSectionChinese({ items, quantities, riceOptions, onQtyChange, onRiceChange, onAdd }) {
     return (
         <div>
-            <h4>Mix & Match Dishes</h4>
-            <Table striped bordered hover>
+            <h3 className="mt-4">Mix & Match</h3>
+            <Table striped hover responsive>
                 <thead>
                     <tr>
-                        <th>Dish Name</th>
-                        <th>Price (£)</th>
-                        <th>Quantity</th>
-                        <th>Rice Option</th>
-                        <th>Action</th>
+                        <th>ID</th>
+                        <th>Dish</th>
+                        <th>Base Price</th>
+                        <th>Rice</th>
+                        <th>Qty</th>
+                        <th>Add</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {dishes.map((dish) => (
-                        <tr key={dish.id}>
-                            <td>{dish.name}</td>
-                            <td>£{dish.price.toFixed(2)}</td>
-                            <td>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    value={selectedDish[dish.id]?.quantity || ""}
-                                    onChange={(e) => handleQuantityChange(dish.id, e.target.value)}
-                                />
-                            </td>
-                            <td>
-                                <Form.Select
-                                    value={selectedDish[dish.id]?.riceOption || ""}
-                                    onChange={(e) => handleRiceSelect(dish.id, e.target.value)}
-                                >
-                                    <option value="">Select Rice</option>
-                                    {riceOptions.map((rice, index) => (
-                                        <option key={index} value={rice}>
-                                            {rice}
-                                        </option>
-                                    ))}
-                                </Form.Select>
-                            </td>
-                            <td>
-                                <Button variant="primary" onClick={() => handleAddToCart(dish)}>
-                                    Add to Cart
-                                </Button>
-                            </td>
-                        </tr>
-                    ))}
+                    {items.map((item) => {
+                        const key = `Mix & Match-${item.id}`;
+                        const quantity = quantities[key] || 0;
+                        const rice = riceOptions[key] || 'Boiled Rice';
+
+                        return (
+                            <tr key={item.id}>
+                                <td>{item.id}</td>
+                                <td>{item.name}</td>
+                                <td>£{item.price.toFixed(2)}</td>
+                                <td>
+                                    <Form.Select
+                                        value={rice}
+                                        onChange={(e) => onRiceChange(key, e.target.value)}
+                                    >
+                                        <option value="Boiled Rice">Boiled Rice</option>
+                                        <option value="Egg Fried Rice">Egg Fried Rice (+£0.20)</option>
+                                    </Form.Select>
+                                </td>
+                                <td style={{ minWidth: '70px', maxWidth: '80px' }}>
+                                    <Form.Control
+                                        type="number"
+                                        value={quantity}
+                                        min="0"
+                                        onChange={(e) => onQtyChange(key, e.target.value)}
+                                    />
+                                </td>
+                                <td>
+                                    <Button variant="success" onClick={() => onAdd(item)}>
+                                        Add
+                                    </Button>
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </Table>
         </div>
     );
-};
+}
 
 export default MixAndMatchSectionChinese;
