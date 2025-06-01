@@ -66,7 +66,7 @@ import React from "react";
 import { Table, Button } from "react-bootstrap";
 
 
-// pass data as prop
+// retrieve data from TakeawayChinese
 const ShoppingCart = ({ cartItems }) => {
 
     const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -74,6 +74,7 @@ const ShoppingCart = ({ cartItems }) => {
     return (
         <div className="mt-5">
             <h3>cartItems</h3>
+
             {cartItems.length === 0 ? (
                 <p>Your cartItems is empty</p>
             ) : (
@@ -87,6 +88,7 @@ const ShoppingCart = ({ cartItems }) => {
                             <th>Subtotal</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {cartItems.map((item, index) => (
                             <tr key={index}>
@@ -97,6 +99,7 @@ const ShoppingCart = ({ cartItems }) => {
                                 <td>£{(item.price * item.quantity).toFixed(2)}</td>
                             </tr>
                         ))}
+
                         <tr>
                             <td colSpan="4" style={{ textAlign: 'right', fontWeight: 'bold' }}>Total</td>
                             <td style={{ fontWeight: 'bold' }}>£{totalPrice.toFixed(2)}</td>
@@ -107,6 +110,5 @@ const ShoppingCart = ({ cartItems }) => {
         </div>
     );
 };
-
 
 export default ShoppingCart;
