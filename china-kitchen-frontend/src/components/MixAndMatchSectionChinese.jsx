@@ -1,10 +1,10 @@
 import React from 'react';
 import { Table, Button, Form } from 'react-bootstrap';
 
-function MixAndMatchSectionChinese({ items, quantities, riceOptions, onQtyChange, onRiceChange, onAdd }) {
+const MixAndMatchSectionChinese = ({ items, quantities, riceOptions, onQtyChange, onRiceChange, onAdd }) => {
     return (
         <div>
-            <h3 className="mt-4">Mix & Match</h3>
+            <h3 className="mt-4">Mix & Match!</h3>
             <Table striped hover responsive>
                 <thead>
                     <tr>
@@ -54,7 +54,7 @@ function MixAndMatchSectionChinese({ items, quantities, riceOptions, onQtyChange
                     })}
                 </tbody>
             </Table>
-        </div>
+        </div >
     );
 }
 

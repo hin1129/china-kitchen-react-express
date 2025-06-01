@@ -100,7 +100,7 @@ function App() {
         <Route path='/takeawaychinese' element={<TakeawayChinese />} />
 
         {/* <Route path='shoppingcart' element={<ShoppingCart />} /> */}
-        <Route
+        {/* <Route
           path="/shoppingcart"
           element={
             logInState ? (
@@ -109,7 +109,7 @@ function App() {
               <SignIn setLogInState={setLogInState} />
             )
           }
-        />
+        /> */}
       </Routes>
 
       <Footer />

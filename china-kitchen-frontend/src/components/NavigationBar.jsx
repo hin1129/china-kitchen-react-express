@@ -70,7 +70,7 @@ const NavigationBar = ({ logInState, handleLogout }) => {
                             {logInState ? (
                                 <>
                                     <NavLink to="/postcomment" className="nav-link">Post comment</NavLink>
-                                    <NavLink to="/shoppingchart" className="nav-link">Shopping Cart</NavLink>
+                                    {/* <NavLink to="/shoppingchart" className="nav-link">Shopping Cart</NavLink> */}
                                     <NavDropdown.Divider />
                                     <NavLink onClick={handleLogout} className="nav-link" id='dropdown-item-button'>Logout</NavLink>
                                     {/* <button onClick={handleLogout} id='dropdown-item-button'>Logout</button><br /> */}

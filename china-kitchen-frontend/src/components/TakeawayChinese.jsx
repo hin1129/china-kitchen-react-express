@@ -53,7 +53,7 @@ const mixAndMatchCategory = {
     ],
 };
 
-function TakeawayChinese() {
+const TakeawayChinese = () => {
     const [cart, setCart] = useState([]);
     const [quantities, setQuantities] = useState({});
     const [riceOptions, setRiceOptions] = useState({});
@@ -165,6 +165,7 @@ function TakeawayChinese() {
                                 value={quantity}
                                 min="0"
                                 onChange={(e) => handleQuantityChange(quantityKey, e.target.value)}
+                                style={{ width: '100%', minWidth: '50px' }}
                             />
                         </td>
                         <td>
@@ -277,8 +278,9 @@ function TakeawayChinese() {
     return (
         <Container className="py-5">
             <h2>Menu</h2>
-            <Row>
-                <Col md={6}>
+            <Row className="align-items-start">
+                {/* total 12 md, was menu and menu, now menu and shopping cart */}
+                <Col md={8}>
                     {categories.map((category) => (
                         <div key={category.categoryName}>
                             <h3 className="mt-4">{category.categoryName}</h3>
@@ -288,9 +290,10 @@ function TakeawayChinese() {
                             </Table>
                         </div>
                     ))}
-                </Col>
 
-                <Col md={6}>
+
+
+                    {/* total 12 md, was menu and menu, now menu and shopping cart */}
                     <div>
                         <h3 className="mt-4">{setMealCategory.categoryName}</h3>
                         <Table striped hover responsive>
@@ -300,7 +303,6 @@ function TakeawayChinese() {
                     </div>
 
                     <div>
-                        <h3 className="mt-4">{mixAndMatchCategory.categoryName}</h3>
                         {/* {renderMixAndMatch()} */}
                         <MixAndMatchSectionChinese
                             items={mixAndMatchCategory.items}
@@ -310,13 +312,12 @@ function TakeawayChinese() {
                             onRiceChange={handleRiceOptionChange}
                             onAdd={handleAddToCartMixAndMatch}
                         />
-
                     </div>
                 </Col>
-            </Row>
 
-            <Row>
-                <Col>{renderCart()}</Col>
+                <Col md={4} className="cart-column">
+                    {renderCart()}
+                </Col>
             </Row>
         </Container>
     );

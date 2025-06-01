@@ -1,6 +1,7 @@
 .App {
   text-align: center;
-  overflow: auto
+  /* disabled to allowed sticky shopping cart */
+  /* overflow: auto; */
 }
 
 .App-logo {
@@ -58,4 +59,16 @@
 .custom-navbar .navbar-nav .nav-link {
   flex: 1;
   text-align: center;
+}
+
+/* column for sticky shopping cart */
+.cart-column {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+  height: fit-content;
+  z-index: 100;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
 }
