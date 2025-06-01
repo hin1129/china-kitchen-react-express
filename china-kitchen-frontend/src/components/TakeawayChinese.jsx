@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Table, Button, Form } from 'react-bootstrap';
 import MixAndMatchSectionChinese from './MixAndMatchSectionChinese'
+import ShoppingCart from './ShoppingCart';
 
 const categories = [
     {
@@ -54,9 +55,11 @@ const mixAndMatchCategory = {
 };
 
 const TakeawayChinese = () => {
-    const [cart, setCart] = useState([]);
     const [quantities, setQuantities] = useState({});
+    // for mix & match
     const [riceOptions, setRiceOptions] = useState({});
+    // pass data to shopping cart component
+    const [cart, setCart] = useState([]);
 
     const handleQuantityChange = (key, value) => {
         setQuantities((prev) => ({ ...prev, [key]: Number(value) }));
@@ -142,7 +145,7 @@ const TakeawayChinese = () => {
                 <th>ID</th>
                 <th>Dish</th>
                 <th>Price</th>
-                <th>Qty</th>
+                <th>Quantity</th>
                 <th>Add</th>
             </tr>
         </thead>
@@ -182,103 +185,14 @@ const TakeawayChinese = () => {
         </tbody>
     );
 
-    // MixAndMatchSectionChinese component
-    // const renderMixAndMatch = () => (
-    //     <Table striped hover responsive>
-    //         <thead>
-    //             <tr>
-    //                 <th>ID</th>
-    //                 <th>Dish</th>
-    //                 <th>Base Price</th>
-    //                 <th>Rice</th>
-    //                 <th>Qty</th>
-    //                 <th>Add</th>
-    //             </tr>
-    //         </thead>
-    //         <tbody>
-    //             {mixAndMatchCategory.items.map((item) => {
-    //                 const key = `Mix & Match-${item.id}`;
-    //                 const quantity = quantities[key] || 0;
-    //                 const rice = riceOptions[key] || 'Boiled Rice';
 
-    //                 return (
-    //                     <tr key={item.id}>
-    //                         <td>{item.id}</td>
-    //                         <td>{item.name}</td>
-    //                         <td>£{item.price.toFixed(2)}</td>
-    //                         <td>
-    //                             <Form.Select
-    //                                 value={rice}
-    //                                 onChange={(e) => handleRiceOptionChange(key, e.target.value)}
-    //                             >
-    //                                 <option value="Boiled Rice">Boiled Rice</option>
-    //                                 <option value="Egg Fried Rice">Egg Fried Rice (+£0.20)</option>
-    //                             </Form.Select>
-    //                         </td>
-    //                         <td style={{ minWidth: '70px', maxWidth: '80px' }}>
-    //                             <Form.Control
-    //                                 type="number"
-    //                                 value={quantity}
-    //                                 min="0"
-    //                                 onChange={(e) => handleQuantityChange(key, e.target.value)}
-    //                             />
-    //                         </td>
-    //                         <td>
-    //                             <Button variant="success" onClick={() => handleAddToCartMixAndMatch(item)}>
-    //                                 Add
-    //                             </Button>
-    //                         </td>
-    //                     </tr>
-    //                 );
-    //             })}
-    //         </tbody>
-    //     </Table>
-    // );
 
-    const renderCart = () => {
-        const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-        return (
-            <div className="mt-5">
-                <h3>Cart</h3>
-                {cart.length === 0 ? (
-                    <p>Your cart is empty</p>
-                ) : (
-                    <Table striped bordered hover>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Dish</th>
-                                <th>Qty</th>
-                                <th>Price</th>
-                                <th>Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {cart.map((item, index) => (
-                                <tr key={index}>
-                                    <td>{item.dishId}</td>
-                                    <td>{item.name}</td>
-                                    <td>{item.quantity}</td>
-                                    <td>£{item.price.toFixed(2)}</td>
-                                    <td>£{(item.price * item.quantity).toFixed(2)}</td>
-                                </tr>
-                            ))}
-                            <tr>
-                                <td colSpan="4" style={{ textAlign: 'right', fontWeight: 'bold' }}>Total</td>
-                                <td style={{ fontWeight: 'bold' }}>£{totalPrice.toFixed(2)}</td>
-                            </tr>
-                        </tbody>
-                    </Table>
-                )}
-            </div>
-        );
-    };
-
+    // 
     return (
         <Container className="py-5">
             <h2>Menu</h2>
-            <Row className="align-items-start">
+            <Row>
+                {/* <Row className="align-items-start"> */}
                 {/* total 12 md, was menu and menu, now menu and shopping cart */}
                 <Col md={8}>
                     {categories.map((category) => (
@@ -291,8 +205,6 @@ const TakeawayChinese = () => {
                         </div>
                     ))}
 
-
-
                     {/* total 12 md, was menu and menu, now menu and shopping cart */}
                     <div>
                         <h3 className="mt-4">{setMealCategory.categoryName}</h3>
@@ -304,19 +216,23 @@ const TakeawayChinese = () => {
 
                     <div>
                         {/* {renderMixAndMatch()} */}
+                        {/* pass data as prop to MixAndMatchSectionChinese component */}
                         <MixAndMatchSectionChinese
                             items={mixAndMatchCategory.items}
                             quantities={quantities}
                             riceOptions={riceOptions}
-                            onQtyChange={handleQuantityChange}
-                            onRiceChange={handleRiceOptionChange}
-                            onAdd={handleAddToCartMixAndMatch}
+                            handleQuantityChange={handleQuantityChange}
+                            handleRiceOptionChange={handleRiceOptionChange}
+                            handleAddToCartMixAndMatch={handleAddToCartMixAndMatch}
                         />
                     </div>
                 </Col>
 
+                {/* custom class to set sticky column */}
                 <Col md={4} className="cart-column">
-                    {renderCart()}
+                    {/* {renderCart()} */}
+                    {/* pass data as prop to ShoppingCart component */}
+                    <ShoppingCart cart={cart} />
                 </Col>
             </Row>
         </Container>
