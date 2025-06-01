@@ -59,7 +59,7 @@ const TakeawayChinese = () => {
     // for mix & match
     const [riceOptions, setRiceOptions] = useState({});
     // pass data to shopping cart component
-    const [cart, setCart] = useState([]);
+    const [cartItems, setCartItems] = useState([]);
 
     const handleQuantityChange = (key, value) => {
         setQuantities((prev) => ({ ...prev, [key]: Number(value) }));
@@ -74,7 +74,7 @@ const TakeawayChinese = () => {
         const qty = quantities[key] || 0;
         if (qty === 0) return;
 
-        setCart((prevCart) => {
+        setCartItems((prevCart) => {
             const existingIndex = prevCart.findIndex(
                 (cartItem) =>
                     cartItem.dishId === item.id &&
@@ -110,7 +110,7 @@ const TakeawayChinese = () => {
         const unitPrice = item.price + riceCost;
         const fullName = `${item.name} + ${rice}`;
 
-        setCart((prevCart) => {
+        setCartItems((prevCart) => {
             const existingIndex = prevCart.findIndex(
                 (cartItem) =>
                     cartItem.dishId === item.id &&
@@ -191,6 +191,7 @@ const TakeawayChinese = () => {
     return (
         <Container className="py-5">
             <h2>Menu</h2>
+
             <Row>
                 {/* <Row className="align-items-start"> */}
                 {/* total 12 md, was menu and menu, now menu and shopping cart */}
@@ -198,6 +199,7 @@ const TakeawayChinese = () => {
                     {categories.map((category) => (
                         <div key={category.categoryName}>
                             <h3 className="mt-4">{category.categoryName}</h3>
+
                             <Table striped hover responsive>
                                 {renderTableHeader()}
                                 {renderTableBody(category)}
@@ -208,6 +210,7 @@ const TakeawayChinese = () => {
                     {/* total 12 md, was menu and menu, now menu and shopping cart */}
                     <div>
                         <h3 className="mt-4">{setMealCategory.categoryName}</h3>
+
                         <Table striped hover responsive>
                             {renderTableHeader()}
                             {renderTableBody(setMealCategory)}
@@ -232,7 +235,7 @@ const TakeawayChinese = () => {
                 <Col md={4} className="cart-column">
                     {/* {renderCart()} */}
                     {/* pass data as prop to ShoppingCart component */}
-                    <ShoppingCart cart={cart} />
+                    <ShoppingCart cartItems={cartItems} />
                 </Col>
             </Row>
         </Container>

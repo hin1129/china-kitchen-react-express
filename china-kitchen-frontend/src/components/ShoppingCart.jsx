@@ -10,9 +10,9 @@
 
 //     return (
 //         <div>
-//             <h3>Shopping Cart</h3>
+//             <h3>Shopping cartItems</h3>
 //             {cartItems.length === 0 ? (
-//                 <p>Your cart is empty.</p>
+//                 <p>Your cartItems is empty.</p>
 //             ) : (
 //                 <Table striped bordered hover>
 //                     <thead>
@@ -66,16 +66,16 @@ import React from "react";
 import { Table, Button } from "react-bootstrap";
 
 
-// pass data as prop, 
-const ShoppingCart = ({ cart }) => {
+// pass data as prop
+const ShoppingCart = ({ cartItems }) => {
 
-    const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     return (
         <div className="mt-5">
-            <h3>Cart</h3>
-            {cart.length === 0 ? (
-                <p>Your cart is empty</p>
+            <h3>cartItems</h3>
+            {cartItems.length === 0 ? (
+                <p>Your cartItems is empty</p>
             ) : (
                 <Table striped bordered hover>
                     <thead>
@@ -88,7 +88,7 @@ const ShoppingCart = ({ cart }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {cart.map((item, index) => (
+                        {cartItems.map((item, index) => (
                             <tr key={index}>
                                 <td>{item.dishId}</td>
                                 <td>{item.name}</td>
