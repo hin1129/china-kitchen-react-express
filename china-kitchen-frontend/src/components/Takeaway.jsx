@@ -1,9 +1,12 @@
 // add button disabled by default 
 import React, { useState } from 'react';
-import { Container, Row, Col, Table, Button, Form } from 'react-bootstrap';
+import { Container, Row, Col, Table, Button, Form, Nav } from 'react-bootstrap';
 import MixAndMatchSectionChinese from './MixAndMatchSection'
 import ShoppingCart from './ShoppingCart';
 import { categories, setMealCategory, mixAndMatchCategory } from '../data/Menu';
+
+
+
 
 const Takeaway = () => {
     const [quantities, setQuantities] = useState({});
@@ -138,17 +141,43 @@ const Takeaway = () => {
 
 
 
+
+
+    // Sticky category nav bar
+    const categoryLinks = [
+        ...categories.map((category) => category.categoryName),
+        setMealCategory.categoryName,
+        'Mix & Match',
+    ];
+
     // 
     return (
         <Container className="py-5">
             <h2>Menu</h2>
+            {/* paddingBottom: '200px'  */}
+            {/* Sticky Inner Navigation Bar */}
+            <Nav
+                className="mb-4 sticky-top bg-light py-2 px-3 border rounded"
+                style={{ zIndex: 1000, top: '56px' }} // adjust top to match main nav bar height
+            >
+                {categoryLinks.map((name) => (
+                    <Nav.Item key={name} className="me-3" >
+                        <Nav.Link href={`#${name.replace(/\s+/g, '')}`} className="text-primary">
+                            {name}
+                        </Nav.Link>
+                    </Nav.Item>
+                ))}
+            </Nav>
+
+
 
             <Row>
                 {/* <Row className="align-items-start"> */}
                 {/* total 12 md, was menu and menu, now menu and shopping cart */}
-                <Col md={8}>
+                <Col md={8} >
                     {categories.map((category) => (
-                        <div key={category.categoryName}>
+                        //  div id for scroll 
+                        <div key={category.categoryName} id={category.categoryName.replace(/\s+/g, '')} className="scroll-anchor-target" >
                             <h3 className="mt-4">{category.categoryName}</h3>
 
                             <Table striped hover responsive>
@@ -159,7 +188,8 @@ const Takeaway = () => {
                     ))}
 
                     {/* total 12 md, was menu and menu, now menu and shopping cart */}
-                    <div>
+                    {/* div id for scroll */}
+                    <div id={setMealCategory.categoryName.replace(/\s+/g, '')} className="scroll-anchor-target" >
                         <h3 className="mt-4">{setMealCategory.categoryName}</h3>
 
                         <Table striped hover responsive>
@@ -168,7 +198,8 @@ const Takeaway = () => {
                         </Table>
                     </div>
 
-                    <div>
+                    {/* div id for scroll */}
+                    <div id="Mix&Match" className="scroll-anchor-target" >
                         {/* {renderMixAndMatch()} */}
                         {/* pass data as prop to MixAndMatchSectionChinese component */}
                         <MixAndMatchSectionChinese
@@ -189,7 +220,7 @@ const Takeaway = () => {
                     <ShoppingCart cartItems={cartItems} />
                 </Col>
             </Row>
-        </Container>
+        </Container >
     );
 }
 
