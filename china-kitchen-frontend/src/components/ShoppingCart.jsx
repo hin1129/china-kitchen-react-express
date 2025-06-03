@@ -73,7 +73,7 @@ const ShoppingCart = ({ cartItems }) => {
 
     return (
         <div className="mt-5">
-            <h3>cartItems</h3>
+            <h3>Cart Items</h3>
 
             {cartItems.length === 0 ? (
                 <p>Your cartItems is empty</p>

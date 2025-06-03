@@ -2,7 +2,7 @@ import React from 'react';
 import { Table, Button, Form } from 'react-bootstrap';
 
 // mixAndMatchCategory arrays, quantities, riceOptions, handle Quantity, handle Rice Option, handleAddToCartMixAndMatch
-const MixAndMatchSectionChinese = ({ items, quantities, riceOptions, handleQuantityChange, handleRiceOptionChange, handleAddToCartMixAndMatch }) => {
+const MixAndMatchSection = ({ items, quantities, riceOptions, handleQuantityChange, handleRiceOptionChange, handleAddToCartMixAndMatch }) => {
     return (
         <div>
             <h3 className="mt-4">Mix & Match</h3>
@@ -66,4 +66,4 @@ const MixAndMatchSectionChinese = ({ items, quantities, riceOptions, handleQuant
     );
 }
 
-export default MixAndMatchSectionChinese;
+export default MixAndMatchSection;
