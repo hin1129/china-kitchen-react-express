@@ -1,14 +1,46 @@
-// add button disabled by default 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Table, Button, Form, Nav } from 'react-bootstrap';
 import MixAndMatchSectionChinese from './MixAndMatchSection'
 import ShoppingCart from './ShoppingCart';
-import { categories, setMealCategory, mixAndMatchCategory } from '../data/Menu';
-
-
-
+// import { categories, setMealCategory, mixAndMatchCategory } from '../data/Menu';
 
 const Takeaway = () => {
+    // fetch menu from backend
+    const [menuData, setMenuData] = useState(null);
+
+    // data from hardcoded frontend file
+    // const categories = menuData?.categories || [];
+    // const setMealCategory = menuData?.setMealCategory || { categoryName: '', items: [] };
+    // const mixAndMatchCategory = menuData?.mixAndMatchCategory || { categoryName: 'Mix & Match', items: [] };
+
+    // retrieve menu data from db
+    const categories = menuData?.categories?.filter(
+        (category) => category.categoryName !== 'Set Meals' && category.categoryName !== 'Mix & Match'
+    ) || [];
+
+    const setMealCategory = {
+        categoryName: 'Set Meals',
+        items: menuData?.setMeals || []
+    };
+
+    const mixAndMatchCategory = {
+        categoryName: 'Mix & Match',
+        items: menuData?.mixAndMatch || []
+    };
+
+    console.log(categories, setMealCategory, mixAndMatchCategory)
+    // retrieve menu data from db
+    useEffect(() => {
+        fetch('http://localhost:8000/takeaway')
+            .then((response) => response.json())
+            .then((data) => {
+                setMenuData(data);
+            })
+            .catch((error) => {
+                console.error('Failed to fetch menu:', error);
+            });
+    }, []);
+
     const [quantities, setQuantities] = useState({});
     // for mix & match
     const [riceOptions, setRiceOptions] = useState({});
@@ -129,6 +161,7 @@ const Takeaway = () => {
                             <Button
                                 variant="primary"
                                 onClick={() => handleAddToCartOther(category.categoryName, item)}
+                                disabled={quantity === 0}
                             >
                                 Add
                             </Button>
@@ -138,10 +171,6 @@ const Takeaway = () => {
             })}
         </tbody>
     );
-
-
-
-
 
     // Sticky category nav bar
     const categoryLinks = [
@@ -154,7 +183,6 @@ const Takeaway = () => {
     return (
         <Container className="py-5">
             <h2>Menu</h2>
-            {/* paddingBottom: '200px'  */}
             {/* Sticky Inner Navigation Bar */}
             <Nav
                 className="mb-4 sticky-top bg-light py-2 px-3 border rounded"

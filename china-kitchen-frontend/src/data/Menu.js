@@ -43,11 +43,8 @@ export const categories = [
     {
         categoryName: 'Duck',
         items: [
-            // {
-            //     id: '31',
-            //     name: 'Crispy Aromatic Duck (Served with Pancakes, Cucumbers, Spring Onion, Hoi Sin Sauce)',
-            //     price: { quarter: 10.0, half: 19.0 },
-            // },
+            { id: '31a', name: 'Quarter Crispy Aromatic Duck (Served with Pancakes, Cucumbers, Spring Onion, Hoi Sin Sauce)', price: 10.0 },
+            { id: '31b', name: 'Half Crispy Aromatic Duck (Served with Pancakes, Cucumbers, Spring Onion, Hoi Sin Sauce)', price: 19.0 },
             { id: '32', name: 'Roast Duck Cantonese Style', price: 7.2 },
             { id: '33', name: 'Stir Fried Duck with Special Soy Sauce', price: 7.2 },
         ],
@@ -215,7 +212,6 @@ export const categories = [
             { id: 136, name: "Bean Curd with Cashew Nuts in Yellow Bean Sauce", price: 5.20 },
         ],
     },
-
 ];
 
 export const setMealCategory = {

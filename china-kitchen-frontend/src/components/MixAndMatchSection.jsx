@@ -13,7 +13,7 @@ const MixAndMatchSection = ({ items, quantities, riceOptions, handleQuantityChan
                         <th>ID</th>
                         <th>Dish</th>
                         <th>Base Price</th>
-                        <th>Rice</th>
+                        <th>Rice Option</th>
                         <th>Quantity</th>
                         <th>Add</th>
                     </tr>
@@ -52,7 +52,7 @@ const MixAndMatchSection = ({ items, quantities, riceOptions, handleQuantityChan
                                 </td>
 
                                 <td>
-                                    <Button variant="success" onClick={() => handleAddToCartMixAndMatch(item)}>
+                                    <Button variant="success" onClick={() => handleAddToCartMixAndMatch(item)} disabled={quantity === 0}>
                                         Add
                                     </Button>
                                 </td>

@@ -1,8 +1,13 @@
 .App {
   text-align: center;
+  /* background-image: url(../public/brighton2.jpg); */
   /* disabled to allowed sticky shopping cart */
   /* overflow: auto; */
 }
+
+/* .footer {
+  background-image: url(../public/brighton2.jpg);
+} */
 
 .App-logo {
   height: 40vmin;
@@ -74,7 +79,8 @@
   padding-top: 30px;
 }
 
+/* inner navbar */
 .scroll-anchor-target {
-  /* Adjust based on height of your sticky category navbar */
+  /* adjust based on height of sticky category navbar */
   scroll-margin-top: 150px;
 }
