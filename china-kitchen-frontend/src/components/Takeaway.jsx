@@ -146,7 +146,7 @@ const Takeaway = () => {
                 return (
                     <tr key={item.id}>
                         <td>{item.id}</td>
-                        <td>{item.name}</td>
+                        <td>{item.name} {!item.inStock && <span style={{ color: 'red' }}>(Out of stock)</span>}</td>
                         <td>£{item.price.toFixed(2)}</td>
                         <td style={{ maxWidth: '80px' }}>
                             <Form.Control
@@ -155,13 +155,14 @@ const Takeaway = () => {
                                 min="0"
                                 onChange={(e) => handleQuantityChange(quantityKey, e.target.value)}
                                 style={{ width: '100%', minWidth: '50px' }}
+                                disabled={!item.inStock}
                             />
                         </td>
                         <td>
                             <Button
                                 variant="primary"
                                 onClick={() => handleAddToCartOther(category.categoryName, item)}
-                                disabled={quantity === 0}
+                                disabled={quantity === 0 || !item.inStock}
                             >
                                 Add
                             </Button>
