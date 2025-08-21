@@ -246,7 +246,7 @@ const Takeaway = () => {
                 <Col md={4} className="cart-column">
                     {/* {renderCart()} */}
                     {/* pass data as prop to ShoppingCart component */}
-                    <ShoppingCart cartItems={cartItems} />
+                    <ShoppingCart cartItems={cartItems} setCartItems={setCartItems} />
                 </Col>
             </Row>
         </Container >

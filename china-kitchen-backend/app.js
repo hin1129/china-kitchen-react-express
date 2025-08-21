@@ -33,7 +33,8 @@ main().catch(error => { console.log(error) })
 app.use(cors());
 // app.use(cors({
 //     origin: 'http://localhost:3000',
-//     credentials: true
+//     credentials: true,
+//     allowedHeaders: ['Content-Type', 'Authorization']
 // }));
 
 // parse requests of content-type - application/json
