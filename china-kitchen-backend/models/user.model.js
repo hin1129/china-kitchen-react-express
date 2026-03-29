@@ -28,7 +28,9 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    emailVerificationToken: String
+    emailVerificationToken: String,
+    address: { type: String },
+    phoneNumber: { type: Number },
 });
 
 const UserDB = mongoose.model(`user`, userSchema);

@@ -168,30 +168,12 @@ const Comment = ({ commentListProps, onEdit, onDelete, onReply, logInState }) =>
         <div >
             <br />
 
-            <div className='comment-table'>
+            <div className='comment-table' >
                 {/* origin comments */}
                 {myUsername}<br />
                 {myCommentDescription}<br />
                 {myDate.toLocaleString()}<br />
 
-                {/* see replies */}
-                {seeReplyComments ? (
-                    // seeReplyComments - true
-                    <>
-                        <button onClick={handleCancelReplyCommentsClick}>cancel see replies</button>
-                        {myRepliedComments(myReplyCommentsArray)}
-                    </>
-                ) : (
-                    // seeReplyComments - false
-                    <>
-                        {myRepliedComments(myReplyCommentsArray) && (
-                            <>
-                                <button onClick={handleReplyCommentsClick} >see replies</button>
-                                <br />
-                            </>
-                        )}
-                    </>
-                )}
 
                 {/* expand option */}
                 {isExpanded ? (
@@ -252,7 +234,28 @@ const Comment = ({ commentListProps, onEdit, onDelete, onReply, logInState }) =>
                     </>
                 )}
                 {/* end of isExpanded check */}
+                <br />
             </div>
+
+
+            {/* see replies */}
+            {seeReplyComments ? (
+                // seeReplyComments - true
+                <>
+                    <button onClick={handleCancelReplyCommentsClick}>cancel see replies</button>
+                    {myRepliedComments(myReplyCommentsArray)}
+                </>
+            ) : (
+                // seeReplyComments - false
+                <>
+                    {myRepliedComments(myReplyCommentsArray) && (
+                        <>
+                            <button onClick={handleReplyCommentsClick} >see replies</button>
+                            <br />
+                        </>
+                    )}
+                </>
+            )}
 
         </div >
     )

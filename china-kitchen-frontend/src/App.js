@@ -14,6 +14,7 @@ import NavigationBar from './components/NavigationBar';
 import Takeaway from './components/Takeaway';
 import TakeawayChinese from './components/TakeawayChinese';
 import ShoppingCart from './components/ShoppingCart';
+import Profile from './components/Profile';
 
 function App() {
   const [logInState, setLogInState] = useState(false);
@@ -60,6 +61,18 @@ function App() {
       <Routes>
         <Route path='/' element={<MyHome />} />
         <Route path="/commentlist" element={<CommentList logInState={logInState} />} />
+
+        <Route
+          path="/profile"
+          element={
+            logInState ? (
+              <Profile />
+            ) : (
+              <Navigate to="/signin" />
+              // <SignIn />
+            )
+          }
+        />
 
         <Route
           path="/postcomment"

@@ -4,23 +4,6 @@ import { Link, NavLink } from 'react-router-dom'
 
 const NavigationBar = ({ logInState, handleLogout }) => {
     return (
-        // <div>
-        //     <NavLink to="/" >Home</NavLink><br />
-        //     <NavLink to="/takeaway" >Takeaway  Menu</NavLink><br />
-        //     <NavLink to="/takeawaychinese" >Takeaway Chinese Menu</NavLink><br />
-        //     {logInState ? (
-        //         <>
-        //             <NavLink to="/postcomment">Post comment</NavLink><br />
-        //             <button onClick={handleLogout}>Logout</button><br />
-        //         </>
-        //     ) : (
-        //         <>
-        //             <NavLink to="/signup">Sign up</NavLink><br />
-        //             <NavLink to="/signin">Sign in</NavLink>
-        //         </>
-        //     )}
-        // </div>
-
         <Navbar className="bg-body-tertiary custom-navbar" collapseOnSelect expand="lg" Navbar sticky='top' bg="dark" data-bs-theme="dark" >
             <Container>
                 <Navbar.Brand href="/">
@@ -34,7 +17,7 @@ const NavigationBar = ({ logInState, handleLogout }) => {
                     {/* Logo */}
                 </Navbar.Brand>
 
-                {/* appear when minimized */}
+                {/* Toggle appears when minimized */}
                 <Navbar.Toggle aria-controls="responsive-navbar-nav" />
 
                 <Navbar.Collapse id="responsive-navbar-nav">
@@ -70,6 +53,7 @@ const NavigationBar = ({ logInState, handleLogout }) => {
                             {logInState ? (
                                 <>
                                     <NavLink to="/postcomment" className="nav-link">Post comment</NavLink>
+                                    <NavLink to="/profile" className="nav-link">Profile</NavLink>
                                     {/* <NavLink to="/shoppingchart" className="nav-link">Shopping Cart</NavLink> */}
                                     <NavDropdown.Divider />
                                     <NavLink onClick={handleLogout} className="nav-link" id='dropdown-item-button'>Logout</NavLink>

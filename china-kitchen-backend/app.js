@@ -12,6 +12,7 @@ import { router as signIn } from './routes/signIn.route.js'
 import { router as emailVerification } from './routes/emailVerification.route.js'
 import { router as menu } from './routes/menu.route.js'
 import { router as order } from './routes/order.route.js'
+import { router as user } from './routes/user.route.js'
 
 // server/env setup
 dotenv.config()
@@ -45,8 +46,6 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
-
-
 // routes
 app.use(`/`, comment);
 app.use(`/`, signUp);
@@ -54,6 +53,7 @@ app.use(`/`, signIn);
 app.use(`/`, emailVerification);
 app.use(`/`, menu);
 app.use(`/`, order);
+app.use(`/`, user);
 
 // run server
 const server = app.listen(port, host, () => {

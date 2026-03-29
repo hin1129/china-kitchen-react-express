@@ -6,7 +6,7 @@ const orderSchema = new mongoose.Schema({
         {
             dishId: String,
             name: String,
-            riceOptions: { type: String, default: undefined },
+            riceOptions: { type: String, default: null },
             price: Number,
             quantity: Number
         }
