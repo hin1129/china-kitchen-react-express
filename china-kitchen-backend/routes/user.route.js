@@ -6,7 +6,7 @@ import { verifyToken } from '../middleware/VerifyToken.js';
 
 router.get('/profile', verifyToken, async (request, response) => {
     try {
-        const user = await User.findById(request.user.userId).select('fullName username address phoneNumber')
+        const user = await User.findById(request.user.userId).select('fullName username address phoneNumber postcode')
 
         if (!user) {
             return response.status(404).json({ message: 'user not found' });

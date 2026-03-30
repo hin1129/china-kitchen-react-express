@@ -12,7 +12,13 @@ const orderSchema = new mongoose.Schema({
         }
     ],
     total: Number,
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+
+    orderType: { type: String, enum: ["collection", "delivery"], required: true },
+    deliveryAddress: { type: String, default: "" },
+    deliveryPostcode: { type: String, default: "" },
+    deliveryFee: { type: Number, default: 0 },
+    subtotal: { type: Number, default: 0 }
 });
 
 const OrderDB = mongoose.model('Order', orderSchema);

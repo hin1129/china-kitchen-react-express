@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Table, Button } from "react-bootstrap";
 import axios from "axios";
 
 // retrieve data from Takeaway
 const ShoppingCart = ({ cartItems, setCartItems }) => {
+    // delivery options
+    const [orderType, setOrderType] = useState("collection")
 
     const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -11,7 +13,8 @@ const ShoppingCart = ({ cartItems, setCartItems }) => {
         try {
             const response = await axios.post('http://localhost:8000/order', {
                 items: cartItems,
-                total: Number(totalPrice.toFixed(2))
+                subtotal: Number(totalPrice.toFixed(2)),
+                orderType
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -65,6 +68,30 @@ const ShoppingCart = ({ cartItems, setCartItems }) => {
                         </tbody>
                     </Table>
 
+                    <div className="mb-3">
+                        <label>
+                            <input
+                                type="radio"
+                                name="orderType"
+                                value="collection"
+                                checked={orderType === "collection"}
+                                onChange={(e) => setOrderType(e.target.value)}
+                            />
+                            Collection
+                        </label>
+
+                        <label style={{ marginLeft: "50px" }}>
+                            <input
+                                type="radio"
+                                name="orderType"
+                                value="delivery"
+                                checked={orderType === "delivery"}
+                                onChange={(e) => setOrderType(e.target.value)}
+                            />
+                            Delivery
+                        </label>
+                    </div>
+
                     <Button
                         variant="success"
                         onClick={handleCheckout}
@@ -74,8 +101,9 @@ const ShoppingCart = ({ cartItems, setCartItems }) => {
                         Checkout
                     </Button>
                 </>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };
 

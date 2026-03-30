@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
     emailVerificationToken: String,
     address: { type: String },
     phoneNumber: { type: Number },
+    postcode: { type: String },
 });
 
 const UserDB = mongoose.model(`user`, userSchema);

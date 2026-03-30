@@ -45,7 +45,15 @@ const Takeaway = () => {
     // for mix & match
     const [riceOptions, setRiceOptions] = useState({});
     // pass data to shopping cart component
-    const [cartItems, setCartItems] = useState([]);
+    // const [cartItems, setCartItems] = useState([]);
+    const [cartItems, setCartItems] = useState(() => {
+        const savedCart = localStorage.getItem("cartItems")
+        return (savedCart ? JSON.parse(savedCart) : [])
+    });
+
+    useEffect(() => {
+        localStorage.setItem("cartItems", JSON.stringify(cartItems))
+    }, [cartItems])
 
     const handleQuantityChange = (key, value) => {
         setQuantities((prev) => ({ ...prev, [key]: Number(value) }));
