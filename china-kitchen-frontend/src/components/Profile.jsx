@@ -1,34 +1,15 @@
-import React, {
-    useEffect,
-    useRef,
-    useState
-} from 'react';
-
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
-import {
-    useLocation,
-    useNavigate
-} from 'react-router-dom';
-
-import {
-    Alert,
-    Button,
-    Form,
-    Spinner
-} from 'react-bootstrap';
-
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Alert, Button, Form, Spinner } from 'react-bootstrap';
 
 const Profile = () => {
 
-    const navigate =
-        useNavigate();
+    const navigate = useNavigate();
 
-    const location =
-        useLocation();
+    const location = useLocation();
 
-    const addressNowStarted =
-        useRef(false);
+    // const addressNowStarted = useRef(false);
 
 
     const query =
@@ -99,6 +80,26 @@ const Profile = () => {
         message,
         setMessage
     ] = useState('');
+
+    const [
+        addressSearch,
+        setAddressSearch
+    ] = useState('');
+
+    const [
+        addressSuggestions,
+        setAddressSuggestions
+    ] = useState([]);
+
+    const [
+        addressSearching,
+        setAddressSearching
+    ] = useState(false);
+
+    const [
+        addressSelecting,
+        setAddressSelecting
+    ] = useState(false);
 
 
     // =====================================
@@ -223,209 +224,142 @@ const Profile = () => {
         };
 
 
+
     // =====================================
-    // ADDRESSNOW
+    // POSTIO ADDRESS SEARCH
     // =====================================
 
     useEffect(() => {
 
-        if (
-            loading ||
-            addressNowStarted.current
-        ) {
-            return;
-        }
+        const query =
+            addressSearch.trim();
 
+        if (query.length < 3) {
 
-        if (
-            !window.pca
-        ) {
-
-            console.error(
-                'AddressNow has not loaded'
-            );
-
-
-            setMessage(
-                'Address search is currently unavailable. You can still enter the address manually.'
-            );
+            setAddressSuggestions([]);
+            setAddressSearching(false);
 
             return;
         }
 
 
-        addressNowStarted.current =
-            true;
+        const timer =
+            setTimeout(
+                async () => {
+
+                    try {
+
+                        setAddressSearching(true);
+
+                        const response =
+                            await axios.get(
+                                'http://localhost:8000/address/search',
+                                {
+                                    params: {
+                                        q: query
+                                    }
+                                }
+                            );
 
 
-        const fields = [
+                        setAddressSuggestions(
+                            response.data.results || []
+                        );
 
-            {
-                element:
-                    'profile-address-search',
+                    }
+                    catch (error) {
 
-                field:
-                    '',
+                        console.error(
+                            'Postio address search error:',
+                            error
+                        );
 
-                mode:
-                    window.pca
-                        .fieldMode
-                        .SEARCH
-            },
+                        setAddressSuggestions([]);
 
-            {
-                element:
-                    'profile-address-line-1',
+                    }
+                    finally {
 
-                field:
-                    'Line1',
+                        setAddressSearching(false);
 
-                mode:
-                    window.pca
-                        .fieldMode
-                        .POPULATE
-            },
+                    }
 
-            {
-                element:
-                    'profile-address-line-2',
+                },
 
-                field:
-                    'Line2',
-
-                mode:
-                    window.pca
-                        .fieldMode
-                        .POPULATE
-            },
-
-            {
-                element:
-                    'profile-city',
-
-                field:
-                    'City',
-
-                mode:
-                    window.pca
-                        .fieldMode
-                        .POPULATE
-            },
-
-            {
-                element:
-                    'profile-postcode',
-
-                field:
-                    'PostalCode',
-
-                mode:
-                    window.pca
-                        .fieldMode
-                        .POPULATE
-            }
-
-        ];
-
-
-        const options = {
-
-            key:
-                process.env
-                    .REACT_APP_ADDRESSNOW_KEY,
-
-            countries: {
-                codesList:
-                    'GBR'
-            },
-
-            manualEntry:
-                true
-
-        };
-
-
-        const control =
-            new window.pca.Address(
-                fields,
-                options
+                500
             );
 
 
-        control.listen(
-            'populate',
-            address => {
+        return () =>
+            clearTimeout(timer);
 
-                setUser(
-                    previous => ({
-
-                        ...previous,
-
-                        addressLine1:
-                            address.Line1 || '',
-
-                        addressLine2:
-                            address.Line2 || '',
-
-                        city:
-                            address.City || '',
-
-                        postcode:
-                            String(
-                                address.PostalCode || ''
-                            )
-                                .toUpperCase()
-
-                    })
-                );
+    }, [addressSearch]);
 
 
-                setMessage(
-                    'Address selected from Royal Mail AddressNow.'
-                );
+    // =====================================
+    // SELECT POSTIO ADDRESS
+    // =====================================
+
+    const handleAddressSelect = async suggestion => {
+        try {
+
+            setAddressSelecting(true);
+            setMessage('');
+
+            const response = await axios.get(`http://localhost:8000/address/${suggestion.udprn}`);
+
+            const address = response.data.address;
+
+            setUser(
+                previous => ({
+                    ...previous,
+
+                    addressLine1:
+                        address.addressLine1 || '',
+
+                    addressLine2:
+                        address.addressLine2 || '',
+
+                    city:
+                        address.city || '',
+
+                    postcode:
+                        String(
+                            address.postcode || ''
+                        ).toUpperCase()
+                })
+            );
 
 
-                setErrors(
-                    previous => ({
+            setAddressSearch(suggestion.suggestion);
 
-                        ...previous,
-
-                        addressLine1:
-                            '',
-
-                        city:
-                            '',
-
-                        postcode:
-                            ''
-
-                    })
-                );
-
-            }
-        );
+            setAddressSuggestions([]);
 
 
-        return () => {
+            setErrors(
+                previous => ({
+                    ...previous,
 
-            try {
+                    addressLine1: '',
+                    city: '',
+                    postcode: ''
+                })
+            );
 
-                if (
-                    typeof control.destroy ===
-                    'function'
-                ) {
-                    control.destroy();
-                }
 
-            }
+            setMessage('Address selected from Royal Mail PAF.');
 
-            catch (error) {
-                // Nothing needed.
-            }
+        }
+        catch (error) {
 
-        };
+            console.error('Postio address selection error:', error);
 
-    }, [loading]);
+            setMessage('Unable to retrieve that address. You can still enter it manually.');
+
+        }
+        finally {
+            setAddressSelecting(false);
+        }
+    };
 
 
     // =====================================
@@ -945,7 +879,7 @@ const Profile = () => {
             </p>
 
 
-            <Form.Group className="mb-3">
+            {/* <Form.Group className="mb-3">
 
                 <Form.Label>
                     Find Address
@@ -957,6 +891,82 @@ const Profile = () => {
                     placeholder="Start typing address or postcode"
                     autoComplete="off"
                 />
+
+            </Form.Group> */}
+
+            <Form.Group className="mb-3">
+
+                <Form.Label>
+                    Find Address
+                </Form.Label>
+
+                <Form.Control
+                    type="text"
+                    placeholder="Start typing address or postcode"
+                    autoComplete="off"
+                    value={addressSearch}
+                    onChange={
+                        event =>
+                            setAddressSearch(
+                                event.target.value
+                            )
+                    }
+                    disabled={addressSelecting}
+                />
+
+
+                {
+                    addressSearching && (
+
+                        <div className="mt-2">
+
+                            <Spinner
+                                size="sm"
+                                animation="border"
+                            />
+
+                            {' '}
+
+                            Searching addresses...
+
+                        </div>
+
+                    )
+                }
+
+
+                {
+                    addressSuggestions.length > 0 && (
+
+                        <div className="border rounded mt-1">
+
+                            {
+                                addressSuggestions.map(
+                                    suggestion => (
+
+                                        <Button
+                                            key={suggestion.udprn}
+                                            type="button"
+                                            variant="light"
+                                            className="w-100 text-start border-0 rounded-0"
+                                            onClick={
+                                                () =>
+                                                    handleAddressSelect(
+                                                        suggestion
+                                                    )
+                                            }
+                                        >
+                                            {suggestion.suggestion}
+                                        </Button>
+
+                                    )
+                                )
+                            }
+
+                        </div>
+
+                    )
+                }
 
             </Form.Group>
 

@@ -59,6 +59,7 @@ router.get('/address/search', async (req, res) => {
         );
 
         url.searchParams.set('q', query);
+        url.searchParams.set('max_results', '100');
 
         const response = await fetch(url, {
             method: 'GET',

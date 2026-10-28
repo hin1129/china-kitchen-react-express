@@ -111,40 +111,14 @@
 
 
 
-import React, {
-    useEffect,
-    useRef,
-    useState
-} from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { Alert, Button, Form, Spinner } from 'react-bootstrap';
 
-import axios
-    from 'axios';
+const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
 
-import {
-    useNavigate
-} from 'react-router-dom';
-
-import {
-    Alert,
-    Button,
-    Form,
-    Spinner
-} from 'react-bootstrap';
-
-
-const ShoppingCart = ({
-    cartItems,
-    setCartItems,
-    logInState
-}) => {
-
-    const navigate =
-        useNavigate();
-
-
-    const addressNowStarted =
-        useRef(false);
-
+    const navigate = useNavigate();
 
     // =====================================
     // ORDER TYPE
@@ -284,6 +258,11 @@ const ShoppingCart = ({
 
         });
 
+    // postio
+    const [guestAddressSearch, setGuestAddressSearch] = useState('');
+    const [guestAddressSuggestions, setGuestAddressSuggestions] = useState([]);
+    const [guestAddressSearching, setGuestAddressSearching] = useState(false);
+    const [guestAddressSelecting, setGuestAddressSelecting] = useState(false);
 
     // =====================================
     // GUEST INPUT
@@ -350,179 +329,132 @@ const ShoppingCart = ({
 
 
     // =====================================
-    // ADDRESSNOW FOR GUEST
+    // POSTIO ADDRESS SEARCH FOR GUEST
     // =====================================
 
     useEffect(() => {
 
         if (
             logInState ||
-            addressNowStarted.current
+            orderType !== 'delivery'
         ) {
 
-            return;
+            setGuestAddressSuggestions([]);
 
+            return;
         }
 
 
-        if (
-            !window.pca
-        ) {
+        const query =
+            guestAddressSearch.trim();
+
+
+        if (query.length < 3) {
+
+            setGuestAddressSuggestions([]);
+            setGuestAddressSearching(false);
 
             return;
-
         }
 
 
-        const searchElement =
-            document.getElementById(
-                'guest-address-search'
+        const timer =
+            setTimeout(
+                async () => {
+
+                    try {
+
+                        setGuestAddressSearching(true);
+
+                        const response =
+                            await axios.get(
+                                'http://localhost:8000/address/search',
+                                {
+                                    params: {
+                                        q: query
+                                    }
+                                }
+                            );
+
+
+                        setGuestAddressSuggestions(
+                            response.data.results || []
+                        );
+
+                    }
+                    catch (error) {
+
+                        console.error(
+                            'Guest Postio search error:',
+                            error
+                        );
+
+                        setGuestAddressSuggestions([]);
+
+                    }
+                    finally {
+
+                        setGuestAddressSearching(false);
+
+                    }
+
+                },
+
+                500
             );
 
 
-        if (
-            !searchElement
-        ) {
+        return () =>
+            clearTimeout(timer);
 
-            return;
-
-        }
-
-
-        addressNowStarted.current =
-            true;
+    }, [
+        guestAddressSearch,
+        logInState,
+        orderType
+    ]);
 
 
-        const fields = [
+    // =====================================
+    // SELECT GUEST POSTIO ADDRESS
+    // =====================================
 
-            {
-                element:
-                    'guest-address-search',
+    const handleGuestAddressSelect =
+        async suggestion => {
 
-                field:
-                    '',
+            try {
 
-                mode:
-                    window.pca
-                        .fieldMode
-                        .SEARCH
-            },
+                setGuestAddressSelecting(true);
+                setError('');
 
-            {
-                element:
-                    'guest-address-line-1',
-
-                field:
-                    'Line1',
-
-                mode:
-                    window.pca
-                        .fieldMode
-                        .POPULATE
-            },
-
-            {
-                element:
-                    'guest-address-line-2',
-
-                field:
-                    'Line2',
-
-                mode:
-                    window.pca
-                        .fieldMode
-                        .POPULATE
-            },
-
-            {
-                element:
-                    'guest-city',
-
-                field:
-                    'City',
-
-                mode:
-                    window.pca
-                        .fieldMode
-                        .POPULATE
-            },
-
-            {
-                element:
-                    'guest-postcode',
-
-                field:
-                    'PostalCode',
-
-                mode:
-                    window.pca
-                        .fieldMode
-                        .POPULATE
-            }
-
-        ];
+                const response =
+                    await axios.get(
+                        `http://localhost:8000/address/${suggestion.udprn}`
+                    );
 
 
-        const options = {
+                const address =
+                    response.data.address;
 
-            key:
-                process.env
-                    .REACT_APP_ADDRESSNOW_KEY,
-
-            countries: {
-
-                codesList:
-                    'GBR'
-
-            },
-
-            manualEntry:
-                true
-
-        };
-
-
-        const control =
-            new window.pca.Address(
-
-                fields,
-
-                options
-
-            );
-
-
-        control.listen(
-
-            'populate',
-
-            address => {
 
                 setGuestDetails(
                     previous => ({
-
                         ...previous,
 
                         deliveryAddress: {
 
                             addressLine1:
-                                address.Line1 ||
-                                '',
+                                address.addressLine1 || '',
 
                             addressLine2:
-                                address.Line2 ||
-                                '',
+                                address.addressLine2 || '',
 
                             city:
-                                address.City ||
-                                '',
+                                address.city || '',
 
                             postcode:
                                 String(
-                                    address.PostalCode ||
-                                    ''
-                                )
-                                    .toUpperCase()
+                                    address.postcode || ''
+                                ).toUpperCase()
 
                         }
 
@@ -530,17 +462,34 @@ const ShoppingCart = ({
                 );
 
 
-                setDeliveryQuote(
-                    null
+                setGuestAddressSearch(
+                    suggestion.suggestion
+                );
+
+                setGuestAddressSuggestions([]);
+
+                setDeliveryQuote(null);
+
+            }
+            catch (error) {
+
+                console.error(
+                    'Guest Postio address selection error:',
+                    error
+                );
+
+                setError(
+                    'Unable to retrieve that address. Please try again or enter it manually.'
                 );
 
             }
+            finally {
 
-        );
+                setGuestAddressSelecting(false);
 
-    }, [
-        logInState
-    ]);
+            }
+
+        };
 
 
     // =====================================
@@ -1522,7 +1471,7 @@ const ShoppingCart = ({
                                                     </h5>
 
 
-                                                    <Form.Group className="mb-3">
+                                                    {/* <Form.Group className="mb-3">
 
                                                         <Form.Label>
                                                             Find Address
@@ -1531,6 +1480,83 @@ const ShoppingCart = ({
                                                         <Form.Control
                                                             id="guest-address-search"
                                                         />
+
+                                                    </Form.Group> */}
+                                                    <Form.Group className="mb-3">
+
+                                                        <Form.Label>
+                                                            Find Address
+                                                        </Form.Label>
+
+                                                        <Form.Control
+                                                            type="text"
+                                                            placeholder="Start typing address or postcode"
+                                                            autoComplete="off"
+                                                            value={guestAddressSearch}
+                                                            onChange={
+                                                                event =>
+                                                                    setGuestAddressSearch(
+                                                                        event.target.value
+                                                                    )
+                                                            }
+                                                            disabled={guestAddressSelecting}
+                                                        />
+
+
+                                                        {
+                                                            guestAddressSearching && (
+
+                                                                <div className="mt-2">
+
+                                                                    <Spinner
+                                                                        size="sm"
+                                                                        animation="border"
+                                                                    />
+
+                                                                    {' '}
+
+                                                                    Searching addresses...
+
+                                                                </div>
+
+                                                            )
+                                                        }
+
+
+                                                        {
+                                                            guestAddressSuggestions.length > 0 && (
+
+                                                                <div className="border rounded mt-1">
+
+                                                                    {
+                                                                        guestAddressSuggestions.map(
+                                                                            suggestion => (
+
+                                                                                <Button
+                                                                                    key={suggestion.udprn}
+                                                                                    type="button"
+                                                                                    variant="light"
+                                                                                    className="w-100 text-start border-0 rounded-0"
+                                                                                    onClick={
+                                                                                        () =>
+                                                                                            handleGuestAddressSelect(
+                                                                                                suggestion
+                                                                                            )
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        suggestion.suggestion
+                                                                                    }
+                                                                                </Button>
+
+                                                                            )
+                                                                        )
+                                                                    }
+
+                                                                </div>
+
+                                                            )
+                                                        }
 
                                                     </Form.Group>
 
