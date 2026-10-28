@@ -2,6 +2,12 @@ import mongoose from 'mongoose'
 
 const commentSchema = new mongoose.Schema(
     {
+        // new
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'user',
+            default: null
+        },
         username: {
             type: String, required: true
         },
@@ -12,6 +18,12 @@ const commentSchema = new mongoose.Schema(
             type: Date, required: true
         },
         replyComments: [{
+            // new
+            replyUserId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'user',
+                default: null
+            },
             replyUsername: String,
             replyCommentDescription: String,
             replyDate: Date,
