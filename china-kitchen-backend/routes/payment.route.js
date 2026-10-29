@@ -4,9 +4,14 @@ import Stripe from 'stripe';
 import validator from 'validator';
 
 import Order from '../models/order.model.js';
-import { optionalVerifyToken } from '../middleware/VerifyToken.js';
+import { verifyToken } from '../middleware/VerifyToken.js';
 import { buildCheckoutOrder } from './order.route.js';
 import { sendNewOrderEmail } from '../utils/sendNewOrderEmail.js';
+import { sendCustomerOrderEmail } from '../utils/sendCustomerOrderEmail.js';
+import {
+    sendCustomerRefundEmail,
+    sendRestaurantRefundEmail
+} from '../utils/sendRefundEmail.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 export const router = express.Router();
@@ -76,7 +81,7 @@ const createStripeSession = async (order, rawConfirmationToken) => {
     return session;
 };
 
-router.post('/checkout/session', optionalVerifyToken, async (request, response) => {
+router.post('/checkout/session', verifyToken, async (request, response) => {
     try {
         const { orderDocument, rawConfirmationToken } = await buildCheckoutOrder(request);
         const order = await Order.create(orderDocument);
@@ -133,6 +138,184 @@ router.get('/orders/public/:id', async (request, response) => {
         return response.status(500).json({ message: 'Unable to load order confirmation' });
     }
 });
+
+const sendRefundNotifications = async orderId => {
+    const order = await Order.findById(orderId);
+
+    if (
+        !order ||
+        order.refundedAmount <= 0 ||
+        !['partial', 'full'].includes(order.refundStatus)
+    ) {
+        return;
+    }
+
+    const restaurantClaimed = await Order.findOneAndUpdate(
+        {
+            _id: order._id,
+            restaurantRefundEmailState: 'pending'
+        },
+        {
+            $set: {
+                restaurantRefundEmailState: 'sending'
+            }
+        },
+        { new: true }
+    );
+
+    if (restaurantClaimed) {
+        try {
+            await sendRestaurantRefundEmail(restaurantClaimed);
+
+            await Order.findByIdAndUpdate(restaurantClaimed._id, {
+                $set: {
+                    restaurantRefundEmailState: 'sent',
+                    restaurantRefundEmailSentAt: new Date()
+                }
+            });
+        }
+        catch (emailError) {
+            console.error(
+                'Restaurant refund email failed:',
+                emailError.message
+            );
+
+            await Order.findByIdAndUpdate(restaurantClaimed._id, {
+                $set: {
+                    restaurantRefundEmailState: 'pending'
+                }
+            });
+        }
+    }
+
+    const customerClaimed = await Order.findOneAndUpdate(
+        {
+            _id: order._id,
+            customerRefundEmailState: 'pending'
+        },
+        {
+            $set: {
+                customerRefundEmailState: 'sending'
+            }
+        },
+        { new: true }
+    );
+
+    if (customerClaimed) {
+        try {
+            await sendCustomerRefundEmail(customerClaimed);
+
+            await Order.findByIdAndUpdate(customerClaimed._id, {
+                $set: {
+                    customerRefundEmailState: 'sent',
+                    customerRefundEmailSentAt: new Date()
+                }
+            });
+        }
+        catch (emailError) {
+            console.error(
+                'Customer refund email failed:',
+                emailError.message
+            );
+
+            await Order.findByIdAndUpdate(customerClaimed._id, {
+                $set: {
+                    customerRefundEmailState: 'pending'
+                }
+            });
+        }
+    }
+};
+
+
+const updateRefundAndNotify = async ({
+    paymentIntentId,
+    amountRefunded,
+    refundId
+}) => {
+    if (!paymentIntentId) return;
+
+    const order = await Order.findOne({
+        stripePaymentIntentId: paymentIntentId,
+        paymentStatus: 'paid'
+    });
+
+    if (!order) {
+        console.error(
+            `Refund webhook could not find order for PaymentIntent ${paymentIntentId}`
+        );
+        return;
+    }
+
+    const refundedAmount =
+        Number((Number(amountRefunded || 0) / 100).toFixed(2));
+
+    const totalPaid =
+        Number(order.total || 0);
+
+    const refundStatus =
+        refundedAmount <= 0
+            ? 'none'
+            : refundedAmount >= totalPaid
+                ? 'full'
+                : 'partial';
+
+    const previousNotificationAmount =
+        Number(order.refundNotificationAmount || 0);
+
+    order.refundStatus =
+        refundStatus;
+
+    order.refundedAmount =
+        refundedAmount;
+
+    order.refundedAt =
+        refundedAmount > 0
+            ? new Date()
+            : null;
+
+    if (refundId) {
+        order.stripeRefundId =
+            refundId;
+    }
+
+    // A later partial refund can increase the cumulative refunded amount.
+    // Reset the two notification states only when there is a new amount
+    // that has not already been notified.
+    if (
+        refundedAmount > previousNotificationAmount
+    ) {
+        order.refundNotificationAmount =
+            refundedAmount;
+
+        order.restaurantRefundEmailState =
+            'pending';
+
+        order.restaurantRefundEmailSentAt =
+            null;
+
+        order.customerRefundEmailState =
+            'pending';
+
+        order.customerRefundEmailSentAt =
+            null;
+    }
+
+    await order.save();
+
+    console.log(
+        `Refund synced for order ${order._id}: ${refundStatus} £${refundedAmount.toFixed(2)}`
+    );
+
+    if (
+        refundedAmount > previousNotificationAmount
+    ) {
+        await sendRefundNotifications(
+            order._id
+        );
+    }
+};
+
 
 export const stripeWebhookHandler = async (request, response) => {
     const signature = request.headers['stripe-signature'];
@@ -208,10 +391,106 @@ export const stripeWebhookHandler = async (request, response) => {
                                 });
                             }
                         }
+
+                        const customerClaimed = await Order.findOneAndUpdate(
+                            {
+                                _id: order._id,
+                                customerEmailState: 'pending'
+                            },
+                            {
+                                $set: {
+                                    customerEmailState: 'sending'
+                                }
+                            },
+                            { new: true }
+                        );
+
+                        if (customerClaimed) {
+                            try {
+                                await sendCustomerOrderEmail(customerClaimed);
+                                await Order.findByIdAndUpdate(customerClaimed._id, {
+                                    $set: {
+                                        customerEmailState: 'sent',
+                                        customerEmailSentAt: new Date()
+                                    }
+                                });
+                            }
+                            catch (emailError) {
+                                console.error('Customer order email failed:', emailError.message);
+                                await Order.findByIdAndUpdate(customerClaimed._id, {
+                                    $set: {
+                                        customerEmailState: 'pending'
+                                    }
+                                });
+                            }
+                        }
                     }
                 }
             }
         }
+
+        if (event.type === 'charge.refunded') {
+            const charge =
+                event.data.object;
+
+            const paymentIntentId =
+                typeof charge.payment_intent === 'string'
+                    ? charge.payment_intent
+                    : charge.payment_intent?.id;
+
+            const refunds =
+                charge.refunds?.data || [];
+
+            const latestRefund =
+                refunds.length > 0
+                    ? refunds[refunds.length - 1]
+                    : null;
+
+            await updateRefundAndNotify({
+                paymentIntentId,
+                amountRefunded: charge.amount_refunded,
+                refundId: latestRefund?.id || ''
+            });
+        }
+
+
+        if (
+            event.type === 'refund.created' ||
+            event.type === 'refund.updated'
+        ) {
+            const refund =
+                event.data.object;
+
+            const paymentIntentId =
+                typeof refund.payment_intent === 'string'
+                    ? refund.payment_intent
+                    : refund.payment_intent?.id;
+
+            if (paymentIntentId) {
+                const paymentIntent =
+                    await stripe.paymentIntents.retrieve(
+                        paymentIntentId,
+                        {
+                            expand: ['latest_charge.refunds']
+                        }
+                    );
+
+                const charge =
+                    paymentIntent.latest_charge;
+
+                if (
+                    charge &&
+                    typeof charge !== 'string'
+                ) {
+                    await updateRefundAndNotify({
+                        paymentIntentId,
+                        amountRefunded: charge.amount_refunded,
+                        refundId: refund.id || ''
+                    });
+                }
+            }
+        }
+
 
         // For failed, expired or cancelled Checkout sessions we intentionally do nothing.
         // The order remains "not paid".

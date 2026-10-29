@@ -1,22 +1,11 @@
-import express
-    from 'express';
-
-import validator
-    from 'validator';
-
-import User
-    from '../models/user.model.js';
-
-import Comment
-    from '../models/comment.model.js';
-
-import {
-    verifyToken
-} from '../middleware/VerifyToken.js';
-
-
-export const router =
-    express.Router();
+import express from 'express';
+import validator from 'validator';
+import User from '../models/user.model.js';
+import Comment from '../models/comment.model.js';
+import { verifyToken } from '../middleware/VerifyToken.js';
+import { getPostioAddress } from '../utils/delivery.js';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
+export const router = express.Router();
 
 
 // =============================
@@ -99,6 +88,10 @@ router.get(
                         postcode:
                             user.postcode ||
                             '',
+
+                        deliveryUdprn:
+                            user.deliveryUdprn ||
+                            null,
 
                         deliveryLongitude:
                             user.deliveryLongitude,
@@ -193,26 +186,27 @@ router.put(
             // CLEAN BASIC DETAILS
             // =============================
 
-            const cleanFullName =
-                String(
-                    fullName ||
-                    ''
-                ).trim();
+            const cleanFullName = String(fullName || '').trim();
 
+            const cleanUsername = String(username || '').trim();
 
-            const cleanUsername =
-                String(
-                    username ||
-                    ''
-                ).trim();
+            const cleanPhoneNumber = String(phoneNumber || '').trim();
 
+            if (!cleanPhoneNumber) {
+                return response
+                    .status(400)
+                    .json({ message: 'Phone number is required' });
+            }
 
-            const cleanPhoneNumber =
-                String(
-                    phoneNumber ||
-                    ''
-                ).trim();
+            const parsedPhoneNumber = parsePhoneNumberFromString(
+                cleanPhoneNumber, 'GB'
+            );
 
+            if (!parsedPhoneNumber || !parsedPhoneNumber.isValid()) {
+                return response
+                    .status(400)
+                    .json({ message: 'Please enter a valid UK phone number' });
+            }
 
             // =============================
             // VALIDATE BASIC DETAILS
@@ -221,16 +215,13 @@ router.put(
             if (
                 !cleanFullName
             ) {
-
                 return response
                     .status(400)
                     .json({
 
                         message:
                             'Full name is required'
-
                     });
-
             }
 
 
@@ -242,10 +233,8 @@ router.put(
                 return response
                     .status(400)
                     .json({
-
                         message:
                             'Username must contain at least 3 characters'
-
                     });
 
             }
@@ -316,79 +305,44 @@ router.put(
                 undefined
             ) {
 
-                const addressLine1 =
-                    String(
-                        deliveryAddress
-                            ?.addressLine1 ||
-                        ''
-                    ).trim();
+                // We do NOT trust the address
+                // text or coordinates sent by
+                // the browser.
+                //
+                // React sends the UDPRN from
+                // the selected Postio address.
+                //
+                // The backend then asks Postio
+                // for the real PAF address and
+                // coordinates.
 
-
-                const addressLine2 =
-                    String(
-                        deliveryAddress
-                            ?.addressLine2 ||
-                        ''
-                    ).trim();
-
-
-                const city =
-                    String(
-                        deliveryAddress
-                            ?.city ||
-                        ''
-                    ).trim();
-
-
-                const postcode =
-                    String(
-                        deliveryAddress
-                            ?.postcode ||
-                        ''
-                    )
-                        .trim()
-                        .toUpperCase();
-
+                const udprn = deliveryAddress?.udprn;
 
                 // =============================
-                // VALIDATE ADDRESS
+                // REQUIRE POSTIO SELECTION
                 // =============================
 
-                if (
-                    !addressLine1
-                ) {
+                const selectedUdprn = udprn || user.deliveryUdprn;
 
+                if (!selectedUdprn) {
                     return response
                         .status(400)
-                        .json({
-
-                            message:
-                                'Address line 1 is required'
-
-                        });
-
+                        .json({ message: 'Please select your address from the address search' });
                 }
 
+                // =============================
+                // VERIFY ADDRESS WITH POSTIO
+                // =============================
 
-                if (
-                    !city
-                ) {
+                const postioAddress = await getPostioAddress(selectedUdprn);
 
-                    return response
-                        .status(400)
-                        .json({
-
-                            message:
-                                'City is required'
-
-                        });
-
-                }
-
+                // =============================
+                // EXTRA POSTCODE VALIDATION
+                // =============================
 
                 if (
                     !validator.isPostalCode(
-                        postcode,
+                        postioAddress.postcode,
                         'GB'
                     )
                 ) {
@@ -398,7 +352,7 @@ router.put(
                         .json({
 
                             message:
-                                'A valid UK postcode is required'
+                                'Postio returned an invalid UK postcode'
 
                         });
 
@@ -406,39 +360,35 @@ router.put(
 
 
                 // =============================
-                // SAVE STRUCTURED ADDRESS
+                // SAVE TRUSTED POSTIO ADDRESS
                 // =============================
 
                 user.addressLine1 =
-                    addressLine1;
+                    postioAddress.addressLine1;
 
 
                 user.addressLine2 =
-                    addressLine2;
+                    postioAddress.addressLine2;
 
 
                 user.city =
-                    city;
+                    postioAddress.city;
 
 
                 user.postcode =
-                    postcode;
+                    postioAddress.postcode;
 
 
-                // =============================
-                // CLEAR OLD ROUTING CACHE
-                // =============================
-                //
-                // If the address changed,
-                // existing AWS coordinates
-                // should not be reused.
+                user.deliveryUdprn =
+                    postioAddress.udprn;
+
 
                 user.deliveryLongitude =
-                    null;
+                    postioAddress.longitude;
 
 
                 user.deliveryLatitude =
-                    null;
+                    postioAddress.latitude;
 
             }
 
@@ -547,6 +497,10 @@ router.put(
                         postcode:
                             user.postcode,
 
+                        deliveryUdprn:
+                            user.deliveryUdprn ||
+                            null,
+
                         deliveryLongitude:
                             user.deliveryLongitude,
 
@@ -568,11 +522,18 @@ router.put(
 
 
             return response
-                .status(500)
+                .status(
+                    error.statusCode ||
+                    500
+                )
                 .json({
 
                     message:
-                        'Failed to update profile'
+                        error.message ||
+                        'Failed to update profile',
+
+                    code:
+                        error.code
 
                 });
 

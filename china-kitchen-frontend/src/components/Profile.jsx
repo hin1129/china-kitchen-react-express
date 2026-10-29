@@ -34,23 +34,15 @@ const Profile = () => {
         user,
         setUser
     ] = useState({
-
         fullName: '',
-
         username: '',
-
         email: '',
-
         phoneNumber: '',
-
         addressLine1: '',
-
         addressLine2: '',
-
         city: '',
-
         postcode: '',
-
+        deliveryUdprn: null,
     });
 
 
@@ -325,7 +317,10 @@ const Profile = () => {
                     postcode:
                         String(
                             address.postcode || ''
-                        ).toUpperCase()
+                        ).toUpperCase(),
+
+                    deliveryUdprn:
+                        address.udprn || null
                 })
             );
 
@@ -583,7 +578,9 @@ const Profile = () => {
                                 user.postcode || ''
                             )
                                 .trim()
-                                .toUpperCase()
+                                .toUpperCase(),
+                        udprn:
+                            user.deliveryUdprn
 
                     };
 
@@ -877,22 +874,6 @@ const Profile = () => {
                 Select the Royal Mail result when it appears.
                 Manual entry remains available as a fallback.
             </p>
-
-
-            {/* <Form.Group className="mb-3">
-
-                <Form.Label>
-                    Find Address
-                </Form.Label>
-
-                <Form.Control
-                    id="profile-address-search"
-                    type="text"
-                    placeholder="Start typing address or postcode"
-                    autoComplete="off"
-                />
-
-            </Form.Group> */}
 
             <Form.Group className="mb-3">
 

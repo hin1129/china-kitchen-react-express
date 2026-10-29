@@ -11,7 +11,7 @@ import { validateDeliveryProfile } from '../utils/profileValidation.js';
 import {
     MINIMUM_DELIVERY_ORDER,
     calculateDeliveryFee,
-    geocodeDeliveryAddress,
+    getPostioAddress,
     getDrivingDistance
 } from '../utils/delivery.js';
 import { getOrderingInfo, validateRequestedTime } from '../utils/openingHours.js';
@@ -34,6 +34,21 @@ const buildAddress = ({ addressLine1, addressLine2, city }) =>
         .filter(Boolean)
         .join(', ');
 
+
+const compareDishIds = (leftId, rightId) => {
+    const left = String(leftId || '').trim();
+    const right = String(rightId || '').trim();
+
+    return left.localeCompare(
+        right,
+        undefined,
+        {
+            numeric: true,
+            sensitivity: 'base'
+        }
+    );
+};
+
 const isValidUKPhone = phoneNumber => {
     const phone = parsePhoneNumberFromString(String(phoneNumber || ''), 'GB');
     return Boolean(phone && phone.isValid());
@@ -55,72 +70,239 @@ const validateGuestContact = guestDetails => {
     return { valid: true, fullName, email, phoneNumber };
 };
 
-const resolveDeliveryLocation = async (user, guestDetails) => {
-    if (user) {
-        const validation = validateDeliveryProfile(user);
-        if (!validation.valid) {
-            const error = new Error('Please complete your delivery details');
-            error.statusCode = 400;
-            error.code = 'DELIVERY_PROFILE_INVALID';
-            throw error;
-        }
+const resolveDeliveryLocation =
+    async (
+        user,
+        guestDetails
+    ) => {
 
-        const address = buildAddress({
-            addressLine1: user.addressLine1,
-            addressLine2: user.addressLine2,
-            city: user.city
-        });
+        // =============================
+        // LOGGED-IN CUSTOMER
+        // =============================
 
-        let longitude = user.deliveryLongitude;
-        let latitude = user.deliveryLatitude;
+        if (
+            user
+        ) {
 
-        if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
-            const coordinates = await geocodeDeliveryAddress(address, user.postcode);
-            longitude = coordinates.longitude;
-            latitude = coordinates.latitude;
-            user.deliveryLongitude = longitude;
-            user.deliveryLatitude = latitude;
+            const validation =
+                validateDeliveryProfile(
+                    user
+                );
+
+
+            if (
+                !validation.valid
+            ) {
+
+                const error =
+                    new Error(
+                        'Please complete your delivery details'
+                    );
+
+                error.statusCode =
+                    400;
+
+                error.code =
+                    'DELIVERY_PROFILE_INVALID';
+
+                throw error;
+
+            }
+
+
+            if (
+                !user.deliveryUdprn
+            ) {
+
+                const error =
+                    new Error(
+                        'Please select your delivery address again from the address search.'
+                    );
+
+                error.statusCode =
+                    400;
+
+                error.code =
+                    'DELIVERY_PROFILE_INVALID';
+
+                throw error;
+
+            }
+
+
+            const postioAddress =
+                await getPostioAddress(
+                    user.deliveryUdprn
+                );
+
+
+            // Refresh the saved address using
+            // Postio's trusted PAF result.
+
+            user.addressLine1 =
+                postioAddress.addressLine1;
+
+            user.addressLine2 =
+                postioAddress.addressLine2;
+
+            user.city =
+                postioAddress.city;
+
+            user.postcode =
+                postioAddress.postcode;
+
+            user.deliveryLongitude =
+                postioAddress.longitude;
+
+            user.deliveryLatitude =
+                postioAddress.latitude;
+
+
             await user.save();
+
+
+            const address =
+                buildAddress({
+
+                    addressLine1:
+                        postioAddress.addressLine1,
+
+                    addressLine2:
+                        postioAddress.addressLine2,
+
+                    city:
+                        postioAddress.city
+
+                });
+
+
+            return {
+
+                address:
+                    address.slice(
+                        0,
+                        300
+                    ),
+
+                postcode:
+                    postioAddress.postcode,
+
+                longitude:
+                    postioAddress.longitude,
+
+                latitude:
+                    postioAddress.latitude
+
+            };
+
         }
+
+
+        // =============================
+        // GUEST CUSTOMER
+        // =============================
+
+        const deliveryAddress =
+            guestDetails
+                ?.deliveryAddress;
+
+
+        if (
+            !deliveryAddress ||
+            typeof deliveryAddress !==
+            'object' ||
+            Array.isArray(
+                deliveryAddress
+            )
+        ) {
+
+            const error =
+                new Error(
+                    'Please select a delivery address'
+                );
+
+            error.statusCode =
+                400;
+
+            error.code =
+                'DELIVERY_ADDRESS_REQUIRED';
+
+            throw error;
+
+        }
+
+
+        const udprn =
+            deliveryAddress.udprn;
+
+
+        if (
+            !udprn
+        ) {
+
+            const error =
+                new Error(
+                    'Please select your delivery address from the address search.'
+                );
+
+            error.statusCode =
+                400;
+
+            error.code =
+                'DELIVERY_ADDRESS_REQUIRED';
+
+            throw error;
+
+        }
+
+
+        // Do not trust the guest's address,
+        // postcode or coordinates.
+        //
+        // The backend resolves the UDPRN
+        // directly with Postio.
+
+        const postioAddress =
+            await getPostioAddress(
+                udprn
+            );
+
+
+        const address =
+            buildAddress({
+
+                addressLine1:
+                    postioAddress.addressLine1,
+
+                addressLine2:
+                    postioAddress.addressLine2,
+
+                city:
+                    postioAddress.city
+
+            });
+
 
         return {
-            address: address.slice(0, 300),
-            postcode: String(user.postcode || '').trim().toUpperCase(),
-            longitude,
-            latitude
+
+            address:
+                address.slice(
+                    0,
+                    300
+                ),
+
+            postcode:
+                postioAddress.postcode,
+
+            longitude:
+                postioAddress.longitude,
+
+            latitude:
+                postioAddress.latitude
+
         };
-    }
 
-    const deliveryAddress = guestDetails?.deliveryAddress;
-    if (!deliveryAddress || typeof deliveryAddress !== 'object' || Array.isArray(deliveryAddress)) {
-        const error = new Error('Please select a delivery address');
-        error.statusCode = 400;
-        error.code = 'DELIVERY_ADDRESS_REQUIRED';
-        throw error;
-    }
-
-    const addressLine1 = cleanText(deliveryAddress.addressLine1, 120);
-    const addressLine2 = cleanText(deliveryAddress.addressLine2, 120);
-    const city = cleanText(deliveryAddress.city, 100);
-    const postcode = cleanText(deliveryAddress.postcode, 12).toUpperCase();
-
-    if (!addressLine1 || !city || !validator.isPostalCode(postcode, 'GB')) {
-        const error = new Error('Please enter a valid UK delivery address');
-        error.statusCode = 400;
-        error.code = 'DELIVERY_ADDRESS_REQUIRED';
-        throw error;
-    }
-
-    const address = buildAddress({ addressLine1, addressLine2, city });
-    const coordinates = await geocodeDeliveryAddress(address, postcode);
-
-    return {
-        address: address.slice(0, 300),
-        postcode,
-        longitude: coordinates.longitude,
-        latitude: coordinates.latitude
     };
-};
 
 export const buildCheckoutOrder = async request => {
     const {
@@ -229,7 +411,13 @@ export const buildCheckoutOrder = async request => {
             customerFullName,
             customerEmail,
             customerPhoneNumber,
-            items: orderData.items,
+            items: [...orderData.items].sort(
+                (leftItem, rightItem) =>
+                    compareDishIds(
+                        leftItem.dishId,
+                        rightItem.dishId
+                    )
+            ),
             subtotal: orderData.subtotal,
             orderType,
             fulfilmentType,

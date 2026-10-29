@@ -1,116 +1,3 @@
-// import React, { useState } from "react";
-// import { Table, Button } from "react-bootstrap";
-// import axios from "axios";
-
-// // retrieve data from Takeaway
-// const ShoppingCart = ({ cartItems, setCartItems }) => {
-//     // delivery options
-//     const [orderType, setOrderType] = useState("collection")
-
-//     const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-//     const handleCheckout = async () => {
-//         try {
-//             const response = await axios.post('http://localhost:8000/order', {
-//                 items: cartItems,
-//                 subtotal: Number(totalPrice.toFixed(2)),
-//                 orderType
-//             }, {
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                     Authorization: `Bearer ${localStorage.getItem('Token')}`
-//                 }
-//             })
-//             console.log(response.data);
-//             alert('Order submitted successfully!');
-//             setCartItems([]);
-//         }
-//         catch (error) {
-//             console.error(error.message);
-//             alert('Order submitted unsuccessfully!');
-//         }
-//     }
-
-//     return (
-//         <div className="mt-5">
-//             <h3>Cart Items</h3>
-
-//             {cartItems.length === 0 ? (
-//                 <p>Your cartItems is empty</p>
-//             ) : (
-//                 <>
-//                     <Table striped bordered hover>
-//                         <thead>
-//                             <tr>
-//                                 <th>ID</th>
-//                                 <th>Dish</th>
-//                                 <th>Quantity</th>
-//                                 <th>Price</th>
-//                                 <th>Subtotal</th>
-//                             </tr>
-//                         </thead>
-
-//                         <tbody>
-//                             {cartItems.map((item, index) => (
-//                                 <tr key={index}>
-//                                     <td>{item.dishId}</td>
-//                                     <td>{item.name}</td>
-//                                     <td>{item.quantity}</td>
-//                                     <td>£{item.price.toFixed(2)}</td>
-//                                     <td>£{(item.price * item.quantity).toFixed(2)}</td>
-//                                 </tr>
-//                             ))}
-
-//                             <tr>
-//                                 <td colSpan="4" style={{ textAlign: 'right', fontWeight: 'bold' }}>Total</td>
-//                                 <td style={{ fontWeight: 'bold' }}>£{totalPrice.toFixed(2)}</td>
-//                             </tr>
-//                         </tbody>
-//                     </Table>
-
-//                     <div className="mb-3">
-//                         <label>
-//                             <input
-//                                 type="radio"
-//                                 name="orderType"
-//                                 value="collection"
-//                                 checked={orderType === "collection"}
-//                                 onChange={(e) => setOrderType(e.target.value)}
-//                             />
-//                             Collection
-//                         </label>
-
-//                         <label style={{ marginLeft: "50px" }}>
-//                             <input
-//                                 type="radio"
-//                                 name="orderType"
-//                                 value="delivery"
-//                                 checked={orderType === "delivery"}
-//                                 onChange={(e) => setOrderType(e.target.value)}
-//                             />
-//                             Delivery
-//                         </label>
-//                     </div>
-
-//                     <Button
-//                         variant="success"
-//                         onClick={handleCheckout}
-//                         disabled={cartItems.length === 0}
-//                         className="mt-3 w-100"
-//                     >
-//                         Checkout
-//                     </Button>
-//                 </>
-//             )
-//             }
-//         </div >
-//     );
-// };
-
-// export default ShoppingCart;
-
-
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -219,277 +106,6 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
         setError
     ] =
         useState('');
-
-
-    // =====================================
-    // GUEST DETAILS
-    // =====================================
-
-    const [
-        guestDetails,
-        setGuestDetails
-    ] =
-        useState({
-
-            fullName:
-                '',
-
-            email:
-                '',
-
-            phoneNumber:
-                '',
-
-            deliveryAddress: {
-
-                addressLine1:
-                    '',
-
-                addressLine2:
-                    '',
-
-                city:
-                    '',
-
-                postcode:
-                    ''
-
-            }
-
-        });
-
-    // postio
-    const [guestAddressSearch, setGuestAddressSearch] = useState('');
-    const [guestAddressSuggestions, setGuestAddressSuggestions] = useState([]);
-    const [guestAddressSearching, setGuestAddressSearching] = useState(false);
-    const [guestAddressSelecting, setGuestAddressSelecting] = useState(false);
-
-    // =====================================
-    // GUEST INPUT
-    // =====================================
-
-    const handleGuestChange =
-        event => {
-
-            const {
-                name,
-                value
-            } =
-                event.target;
-
-
-            setGuestDetails(
-                previous => ({
-
-                    ...previous,
-
-                    [name]:
-                        value
-
-                })
-            );
-
-        };
-
-
-    const handleGuestAddressChange =
-        event => {
-
-            const {
-                name,
-                value
-            } =
-                event.target;
-
-
-            setGuestDetails(
-                previous => ({
-
-                    ...previous,
-
-                    deliveryAddress: {
-
-                        ...previous
-                            .deliveryAddress,
-
-                        [name]:
-                            value
-
-                    }
-
-                })
-            );
-
-
-            setDeliveryQuote(
-                null
-            );
-
-        };
-
-
-    // =====================================
-    // POSTIO ADDRESS SEARCH FOR GUEST
-    // =====================================
-
-    useEffect(() => {
-
-        if (
-            logInState ||
-            orderType !== 'delivery'
-        ) {
-
-            setGuestAddressSuggestions([]);
-
-            return;
-        }
-
-
-        const query =
-            guestAddressSearch.trim();
-
-
-        if (query.length < 3) {
-
-            setGuestAddressSuggestions([]);
-            setGuestAddressSearching(false);
-
-            return;
-        }
-
-
-        const timer =
-            setTimeout(
-                async () => {
-
-                    try {
-
-                        setGuestAddressSearching(true);
-
-                        const response =
-                            await axios.get(
-                                'http://localhost:8000/address/search',
-                                {
-                                    params: {
-                                        q: query
-                                    }
-                                }
-                            );
-
-
-                        setGuestAddressSuggestions(
-                            response.data.results || []
-                        );
-
-                    }
-                    catch (error) {
-
-                        console.error(
-                            'Guest Postio search error:',
-                            error
-                        );
-
-                        setGuestAddressSuggestions([]);
-
-                    }
-                    finally {
-
-                        setGuestAddressSearching(false);
-
-                    }
-
-                },
-
-                500
-            );
-
-
-        return () =>
-            clearTimeout(timer);
-
-    }, [
-        guestAddressSearch,
-        logInState,
-        orderType
-    ]);
-
-
-    // =====================================
-    // SELECT GUEST POSTIO ADDRESS
-    // =====================================
-
-    const handleGuestAddressSelect =
-        async suggestion => {
-
-            try {
-
-                setGuestAddressSelecting(true);
-                setError('');
-
-                const response =
-                    await axios.get(
-                        `http://localhost:8000/address/${suggestion.udprn}`
-                    );
-
-
-                const address =
-                    response.data.address;
-
-
-                setGuestDetails(
-                    previous => ({
-                        ...previous,
-
-                        deliveryAddress: {
-
-                            addressLine1:
-                                address.addressLine1 || '',
-
-                            addressLine2:
-                                address.addressLine2 || '',
-
-                            city:
-                                address.city || '',
-
-                            postcode:
-                                String(
-                                    address.postcode || ''
-                                ).toUpperCase()
-
-                        }
-
-                    })
-                );
-
-
-                setGuestAddressSearch(
-                    suggestion.suggestion
-                );
-
-                setGuestAddressSuggestions([]);
-
-                setDeliveryQuote(null);
-
-            }
-            catch (error) {
-
-                console.error(
-                    'Guest Postio address selection error:',
-                    error
-                );
-
-                setError(
-                    'Unable to retrieve that address. Please try again or enter it manually.'
-                );
-
-            }
-            finally {
-
-                setGuestAddressSelecting(false);
-
-            }
-
-        };
 
 
     // =====================================
@@ -604,7 +220,8 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
 
         if (
             orderType !==
-            'delivery'
+            'delivery' ||
+            !logInState
         ) {
 
             setDeliveryQuote(
@@ -620,34 +237,6 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
             !cartItems ||
             cartItems.length ===
             0
-        ) {
-
-            setDeliveryQuote(
-                null
-            );
-
-            return;
-
-        }
-
-
-        // For guests, wait until
-        // address has been entered.
-        if (
-            !logInState &&
-            (
-                !guestDetails
-                    .deliveryAddress
-                    .addressLine1 ||
-
-                !guestDetails
-                    .deliveryAddress
-                    .city ||
-
-                !guestDetails
-                    .deliveryAddress
-                    .postcode
-            )
         ) {
 
             setDeliveryQuote(
@@ -683,12 +272,7 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
                                 {
 
                                     items:
-                                        cartItems,
-
-                                    guestDetails:
-                                        logInState
-                                            ? undefined
-                                            : guestDetails
+                                        cartItems
 
                                 },
 
@@ -776,9 +360,7 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
 
         cartItems,
 
-        logInState,
-
-        guestDetails
+        logInState
 
     ]);
 
@@ -941,6 +523,32 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
 
 
                 if (
+                    !logInState
+                ) {
+
+                    localStorage.setItem(
+                        'TakeawayCart',
+                        JSON.stringify(
+                            cartItems
+                        )
+                    );
+
+                    navigate(
+                        '/signin',
+                        {
+                            state: {
+                                returnTo:
+                                    '/takeaway'
+                            }
+                        }
+                    );
+
+                    return;
+
+                }
+
+
+                if (
                     !cartItems.length
                 ) {
 
@@ -970,6 +578,8 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
 
 
                 if (
+                    logInState &&
+
                     orderType ===
                     'delivery' &&
 
@@ -1021,7 +631,7 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
                 const response =
                     await axios.post(
 
-                        'http://localhost:8000/order',
+                        'http://localhost:8000/checkout/session',
 
                         {
 
@@ -1043,15 +653,7 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
 
                             allergyInformation,
 
-                            specialRequests,
-
-                            guestDetails:
-
-                                logInState
-
-                                    ? undefined
-
-                                    : guestDetails
+                            specialRequests
 
                         },
 
@@ -1063,33 +665,28 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
                     );
 
 
-                const order =
+                const checkoutUrl =
                     response
                         .data
-                        .order;
+                        .checkoutUrl;
 
 
-                setCartItems(
-                    []
-                );
+                if (
+                    !checkoutUrl
+                ) {
+
+                    throw new Error(
+                        'Stripe checkout URL was not returned'
+                    );
+
+                }
 
 
-                localStorage.removeItem(
-                    'TakeawayCart'
-                );
-
-
-                navigate(
-
-                    `/order-confirmation/${order._id}`,
-
-                    {
-                        state: {
-                            order
-                        }
-                    }
-
-                );
+                // Do NOT clear the cart here.
+                // The customer has not paid yet.
+                // Keep the cart until Stripe confirms payment.
+                window.location.href =
+                    checkoutUrl;
 
             }
 
@@ -1129,7 +726,7 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
                         ?.data
                         ?.message ||
 
-                    'Order could not be submitted'
+                    'Unable to start payment'
 
                 );
 
@@ -1144,6 +741,59 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
             }
 
         };
+
+
+    // =====================================
+    // SORT CART BY DISH ID
+    // =====================================
+
+    const sortedCartItems =
+        cartItems
+            .map(
+                (
+                    item,
+                    originalIndex
+                ) => ({
+                    item,
+                    originalIndex
+                })
+            )
+            .sort(
+                (
+                    first,
+                    second
+                ) => {
+
+                    const firstId =
+                        Number(
+                            first.item.dishId
+                        );
+
+                    const secondId =
+                        Number(
+                            second.item.dishId
+                        );
+
+                    if (
+                        Number.isFinite(firstId) &&
+                        Number.isFinite(secondId)
+                    ) {
+                        return firstId - secondId;
+                    }
+
+                    return String(
+                        first.item.dishId
+                    ).localeCompare(
+                        String(
+                            second.item.dishId
+                        ),
+                        undefined,
+                        {
+                            numeric: true
+                        }
+                    );
+                }
+            );
 
 
     // =====================================
@@ -1209,25 +859,33 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
                         <>
 
                             {
-                                cartItems.map(
-                                    (
+                                sortedCartItems.map(
+                                    ({
                                         item,
-                                        index
-                                    ) => (
+                                        originalIndex
+                                    }) => (
 
                                         <div
 
                                             key={
-                                                `${item.dishId}-${item.rice || 'none'}-${index}`
+                                                `${item.dishId}-${item.rice || 'none'}-${originalIndex}`
                                             }
 
                                             className="border rounded p-3 mb-2"
 
                                         >
 
-                                            <strong>
-                                                {item.name}
-                                            </strong>
+                                            <div>
+                                                <strong>
+                                                    ID: {item.dishId}
+                                                </strong>
+                                            </div>
+
+                                            <div>
+                                                <strong>
+                                                    {item.name}
+                                                </strong>
+                                            </div>
 
 
                                             {
@@ -1263,7 +921,7 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
 
                                                             handleCartQuantityChange(
 
-                                                                index,
+                                                                originalIndex,
 
                                                                 event.target.value
 
@@ -1306,7 +964,7 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
                                                 onClick={
                                                     () =>
                                                         handleRemoveItem(
-                                                            index
+                                                            originalIndex
                                                         )
                                                 }
 
@@ -1373,310 +1031,6 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
                                 }
 
                             />
-
-
-                            {/* =========================
-                                GUEST DETAILS
-                            ========================= */}
-
-                            {
-                                !logInState && (
-
-                                    <div className="mt-4">
-
-                                        <h4>
-                                            Your Details
-                                        </h4>
-
-
-                                        <Form.Group className="mb-3">
-
-                                            <Form.Label>
-                                                Full Name
-                                            </Form.Label>
-
-                                            <Form.Control
-
-                                                name="fullName"
-
-                                                value={
-                                                    guestDetails.fullName
-                                                }
-
-                                                onChange={
-                                                    handleGuestChange
-                                                }
-
-                                            />
-
-                                        </Form.Group>
-
-
-                                        <Form.Group className="mb-3">
-
-                                            <Form.Label>
-                                                Email
-                                            </Form.Label>
-
-                                            <Form.Control
-
-                                                type="email"
-
-                                                name="email"
-
-                                                value={
-                                                    guestDetails.email
-                                                }
-
-                                                onChange={
-                                                    handleGuestChange
-                                                }
-
-                                            />
-
-                                        </Form.Group>
-
-
-                                        <Form.Group className="mb-3">
-
-                                            <Form.Label>
-                                                Phone Number
-                                            </Form.Label>
-
-                                            <Form.Control
-
-                                                name="phoneNumber"
-
-                                                value={
-                                                    guestDetails.phoneNumber
-                                                }
-
-                                                onChange={
-                                                    handleGuestChange
-                                                }
-
-                                            />
-
-                                        </Form.Group>
-
-
-                                        {
-                                            orderType ===
-                                            'delivery' && (
-
-                                                <>
-
-                                                    <h5>
-                                                        Delivery Address
-                                                    </h5>
-
-
-                                                    {/* <Form.Group className="mb-3">
-
-                                                        <Form.Label>
-                                                            Find Address
-                                                        </Form.Label>
-
-                                                        <Form.Control
-                                                            id="guest-address-search"
-                                                        />
-
-                                                    </Form.Group> */}
-                                                    <Form.Group className="mb-3">
-
-                                                        <Form.Label>
-                                                            Find Address
-                                                        </Form.Label>
-
-                                                        <Form.Control
-                                                            type="text"
-                                                            placeholder="Start typing address or postcode"
-                                                            autoComplete="off"
-                                                            value={guestAddressSearch}
-                                                            onChange={
-                                                                event =>
-                                                                    setGuestAddressSearch(
-                                                                        event.target.value
-                                                                    )
-                                                            }
-                                                            disabled={guestAddressSelecting}
-                                                        />
-
-
-                                                        {
-                                                            guestAddressSearching && (
-
-                                                                <div className="mt-2">
-
-                                                                    <Spinner
-                                                                        size="sm"
-                                                                        animation="border"
-                                                                    />
-
-                                                                    {' '}
-
-                                                                    Searching addresses...
-
-                                                                </div>
-
-                                                            )
-                                                        }
-
-
-                                                        {
-                                                            guestAddressSuggestions.length > 0 && (
-
-                                                                <div className="border rounded mt-1">
-
-                                                                    {
-                                                                        guestAddressSuggestions.map(
-                                                                            suggestion => (
-
-                                                                                <Button
-                                                                                    key={suggestion.udprn}
-                                                                                    type="button"
-                                                                                    variant="light"
-                                                                                    className="w-100 text-start border-0 rounded-0"
-                                                                                    onClick={
-                                                                                        () =>
-                                                                                            handleGuestAddressSelect(
-                                                                                                suggestion
-                                                                                            )
-                                                                                    }
-                                                                                >
-                                                                                    {
-                                                                                        suggestion.suggestion
-                                                                                    }
-                                                                                </Button>
-
-                                                                            )
-                                                                        )
-                                                                    }
-
-                                                                </div>
-
-                                                            )
-                                                        }
-
-                                                    </Form.Group>
-
-
-                                                    <Form.Group className="mb-3">
-
-                                                        <Form.Label>
-                                                            Address Line 1
-                                                        </Form.Label>
-
-                                                        <Form.Control
-
-                                                            id="guest-address-line-1"
-
-                                                            name="addressLine1"
-
-                                                            value={
-                                                                guestDetails
-                                                                    .deliveryAddress
-                                                                    .addressLine1
-                                                            }
-
-                                                            onChange={
-                                                                handleGuestAddressChange
-                                                            }
-
-                                                        />
-
-                                                    </Form.Group>
-
-
-                                                    <Form.Group className="mb-3">
-
-                                                        <Form.Label>
-                                                            Address Line 2
-                                                        </Form.Label>
-
-                                                        <Form.Control
-
-                                                            id="guest-address-line-2"
-
-                                                            name="addressLine2"
-
-                                                            value={
-                                                                guestDetails
-                                                                    .deliveryAddress
-                                                                    .addressLine2
-                                                            }
-
-                                                            onChange={
-                                                                handleGuestAddressChange
-                                                            }
-
-                                                        />
-
-                                                    </Form.Group>
-
-
-                                                    <Form.Group className="mb-3">
-
-                                                        <Form.Label>
-                                                            City
-                                                        </Form.Label>
-
-                                                        <Form.Control
-
-                                                            id="guest-city"
-
-                                                            name="city"
-
-                                                            value={
-                                                                guestDetails
-                                                                    .deliveryAddress
-                                                                    .city
-                                                            }
-
-                                                            onChange={
-                                                                handleGuestAddressChange
-                                                            }
-
-                                                        />
-
-                                                    </Form.Group>
-
-
-                                                    <Form.Group className="mb-3">
-
-                                                        <Form.Label>
-                                                            Postcode
-                                                        </Form.Label>
-
-                                                        <Form.Control
-
-                                                            id="guest-postcode"
-
-                                                            name="postcode"
-
-                                                            value={
-                                                                guestDetails
-                                                                    .deliveryAddress
-                                                                    .postcode
-                                                            }
-
-                                                            onChange={
-                                                                handleGuestAddressChange
-                                                            }
-
-                                                        />
-
-                                                    </Form.Group>
-
-                                                </>
-
-                                            )
-                                        }
-
-                                    </div>
-
-                                )
-                            }
 
 
                             {/* =========================
@@ -2170,29 +1524,23 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
                                 onClick={
                                     handleCheckout
                                 }
-
                                 disabled={
-
                                     checkoutLoading ||
-
-                                    orderingInfoLoading ||
-
-                                    deliveryLoading ||
-
                                     (
-                                        fulfilmentType ===
-                                        'scheduled' &&
-
-                                        !requestedTime
-                                    ) ||
-
-                                    (
-                                        orderType ===
-                                        'delivery' &&
-
-                                        !deliveryQuote
+                                        logInState &&
+                                        (
+                                            orderingInfoLoading ||
+                                            deliveryLoading ||
+                                            (
+                                                fulfilmentType === 'scheduled' &&
+                                                !requestedTime
+                                            ) ||
+                                            (
+                                                orderType === 'delivery' &&
+                                                !deliveryQuote
+                                            )
+                                        )
                                     )
-
                                 }
 
                             >

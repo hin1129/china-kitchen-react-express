@@ -1,143 +1,94 @@
-const METRES_PER_MILE =
-    1609.344;
-
-
-export const MINIMUM_DELIVERY_ORDER =
-    15;
-
+const METRES_PER_MILE = 1609.344;
+export const MINIMUM_DELIVERY_ORDER = 15;
 
 // =============================
 // NORMALISE POSTCODE
 // =============================
 
-const normalisePostcode =
-    postcode =>
-
-        String(
-            postcode || ''
-        )
-            .replace(
-                /\s+/g,
-                ''
-            )
-            .toUpperCase();
-
+const normalisePostcode = postcode => String(postcode || '').replace(/\s+/g, '').toUpperCase();
 
 // =============================
 // DELIVERY FEE
 // =============================
 
-export const calculateDeliveryFee =
-    distanceMiles => {
+export const calculateDeliveryFee = distanceMiles => {
+    if (
+        !Number.isFinite(
+            distanceMiles
+        ) ||
+        distanceMiles < 0
+    ) {
 
-        if (
-            !Number.isFinite(
-                distanceMiles
-            ) ||
-            distanceMiles < 0
-        ) {
-
-            throw new Error(
-                'Invalid delivery distance'
-            );
-
-        }
-
-
-        // Example:
-        // 0 - 2 miles = £1
-        // then £1 per extra mile
-
-        if (
-            distanceMiles <=
-            2
-        ) {
-
-            return 1;
-
-        }
-
-
-        return (
-            1 +
-            Math.ceil(
-                distanceMiles -
-                2
-            )
+        throw new Error(
+            'Invalid delivery distance'
         );
 
-    };
+    }
+
+
+    // Example:
+    // 0 - 2 miles = £1
+    // then £1 per extra mile
+
+    if (
+        distanceMiles <=
+        2
+    ) {
+
+        return 1;
+
+    }
+
+
+    return (
+        1 +
+        Math.ceil(
+            distanceMiles -
+            2
+        )
+    );
+
+};
 
 
 // =============================
-// AMAZON GEOCODE
-//
-// AddressNow / Royal Mail owns
-// the postal address.
-//
-// Amazon only turns that address
-// into coordinates for routing.
+// POSTIO ADDRESS LOOKUP
 // =============================
 
-export const geocodeDeliveryAddress =
-    async (
-        address,
-        postcode
-    ) => {
+export const getPostioAddress =
+    async udprn => {
 
-        const cleanAddress =
+        const cleanUdprn =
             String(
-                address || ''
+                udprn || ''
             ).trim();
 
 
-        const cleanPostcode =
-            String(
-                postcode || ''
-            )
-                .trim()
-                .toUpperCase();
-
-
         if (
-            !cleanAddress ||
-            !cleanPostcode
+            !/^\d+$/.test(
+                cleanUdprn
+            )
         ) {
 
             const error =
                 new Error(
-                    'Delivery address and postcode are required'
+                    'Please select a valid delivery address'
                 );
-
 
             error.statusCode =
                 400;
 
+            error.code =
+                'DELIVERY_ADDRESS_REQUIRED';
 
             throw error;
 
         }
 
 
-        const region =
-            process.env
-                .AMAZON_LOCATION_REGION;
-
-
         const apiKey =
             process.env
-                .AMAZON_LOCATION_PLACE_API_KEY;
-
-
-        if (
-            !region
-        ) {
-
-            throw new Error(
-                'AMAZON_LOCATION_REGION is missing'
-            );
-
-        }
+                .POSTIO_API_KEY;
 
 
         if (
@@ -145,192 +96,96 @@ export const geocodeDeliveryAddress =
         ) {
 
             throw new Error(
-                'AMAZON_LOCATION_PLACE_API_KEY is missing'
+                'POSTIO_API_KEY is missing'
             );
 
         }
 
 
-        // Amazon Places V2 Geocode endpoint
-        const url =
-            `https://places.geo.${region}.amazonaws.com/v2/geocode?key=${encodeURIComponent(
-                apiKey
-            )}`;
-
-
-        const requestBody = {
-
-            QueryText:
-                `${cleanAddress}, ${cleanPostcode}, United Kingdom`,
-
-            MaxResults:
-                10,
-
-            Filter: {
-
-                IncludeCountries: [
-                    'GB'
-                ]
-
-            }
-
-        };
-
-
-        console.log(
-            'AWS GEOCODE QUERY:',
-            requestBody.QueryText
-        );
-
-
-        const awsResponse =
+        const response =
             await fetch(
 
-                url,
+                `https://api.postio.co.uk/v1/address/udprn/${cleanUdprn}`,
 
                 {
                     method:
-                        'POST',
+                        'GET',
 
                     headers: {
 
-                        'Content-Type':
-                            'application/json'
+                        'x-api-key':
+                            apiKey
 
-                    },
-
-                    body:
-                        JSON.stringify(
-                            requestBody
-                        )
-
+                    }
                 }
 
             );
 
 
-        // =============================
-        // AWS ERROR
-        // =============================
-
-        if (
-            !awsResponse.ok
-        ) {
-
-            const errorText =
-                await awsResponse.text();
-
-
-            console.error(
-                'AWS GEOCODE HTTP STATUS:',
-                awsResponse.status
-            );
-
-
-            console.error(
-                'AWS GEOCODE ERROR:',
-                errorText
-            );
-
-
-            const error =
-                new Error(
-                    'Could not locate delivery address for routing'
-                );
-
-
-            error.statusCode =
-                400;
-
-
-            throw error;
-
-        }
-
-
         const data =
-            await awsResponse.json();
-
-
-        console.log(
-            'AWS GEOCODE RESPONSE:',
-            data
-        );
-
-
-        const results =
-            data.ResultItems ||
-            [];
+            await response.json();
 
 
         if (
-            results.length ===
-            0
+            !response.ok
         ) {
+
+            console.error(
+                'Postio address lookup error:',
+                data
+            );
+
 
             const error =
                 new Error(
-                    'Amazon could not find this delivery location'
+                    'Unable to verify delivery address'
                 );
-
 
             error.statusCode =
                 400;
 
+            error.code =
+                'DELIVERY_ADDRESS_REQUIRED';
 
             throw error;
 
         }
 
 
-        const wantedPostcode =
-            normalisePostcode(
-                cleanPostcode
-            );
+        const result =
+            data.results?.[0];
 
 
-        // First try to find an exact
-        // postcode match.
-        let selectedResult =
-            results.find(
-
-                result =>
-
-                    normalisePostcode(
-                        result.Address
-                            ?.PostalCode
-                    ) ===
-                    wantedPostcode
-
-            );
-
-
-        // If AWS's postcode metadata
-        // is imperfect, use its first
-        // geocode result instead.
-        //
-        // We DO NOT replace the Royal
-        // Mail address with AWS's text.
         if (
-            !selectedResult
+            !result
         ) {
 
-            selectedResult =
-                results[0];
+            const error =
+                new Error(
+                    'Delivery address was not found'
+                );
+
+            error.statusCode =
+                400;
+
+            error.code =
+                'DELIVERY_ADDRESS_REQUIRED';
+
+            throw error;
 
         }
 
 
         const longitude =
-            selectedResult
-                ?.Position
-            ?.[0];
+            Number(
+                result.longitude
+            );
 
 
         const latitude =
-            selectedResult
-                ?.Position
-            ?.[1];
+            Number(
+                result.latitude
+            );
 
 
         if (
@@ -344,13 +199,11 @@ export const geocodeDeliveryAddress =
 
             const error =
                 new Error(
-                    'Amazon did not return valid delivery coordinates'
+                    'Delivery address has no valid coordinates'
                 );
-
 
             error.statusCode =
                 400;
-
 
             throw error;
 
@@ -359,6 +212,37 @@ export const geocodeDeliveryAddress =
 
         return {
 
+            udprn:
+                Number(
+                    result.udprn
+                ),
+
+            addressLine1:
+                String(
+                    result.address_line_1 ||
+                    ''
+                ).trim(),
+
+            addressLine2:
+                String(
+                    result.address_line_2 ||
+                    ''
+                ).trim(),
+
+            city:
+                String(
+                    result.post_town ||
+                    ''
+                ).trim(),
+
+            postcode:
+                String(
+                    result.postcode ||
+                    ''
+                )
+                    .trim()
+                    .toUpperCase(),
+
             longitude,
 
             latitude
@@ -366,6 +250,7 @@ export const geocodeDeliveryAddress =
         };
 
     };
+
 
 
 // =============================

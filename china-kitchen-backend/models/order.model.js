@@ -1,31 +1,3 @@
-// import mongoose from 'mongoose';
-
-// const orderSchema = new mongoose.Schema({
-//     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-//     items: [
-//         {
-//             dishId: String,
-//             name: String,
-//             riceOptions: { type: String, default: null },
-//             price: Number,
-//             quantity: Number
-//         }
-//     ],
-//     total: Number,
-//     createdAt: { type: Date, default: Date.now },
-
-//     orderType: { type: String, enum: ["collection", "delivery"], required: true },
-//     deliveryAddress: { type: String, default: "" },
-//     deliveryPostcode: { type: String, default: "" },
-//     deliveryFee: { type: Number, default: 0 },
-//     subtotal: { type: Number, default: 0 }
-// });
-
-// const OrderDB = mongoose.model('Order', orderSchema);
-// export default OrderDB
-
-
-
 import mongoose from 'mongoose';
 
 const orderItemSchema = new mongoose.Schema(
@@ -151,6 +123,52 @@ const orderSchema = new mongoose.Schema(
         stripeCheckoutSessionId: { type: String, default: '', index: true },
         stripePaymentIntentId: { type: String, default: '' },
 
+        refundStatus: {
+            type: String,
+            enum: ['none', 'partial', 'full'],
+            default: 'none',
+            index: true
+        },
+
+        refundedAmount: {
+            type: Number,
+            min: 0,
+            default: 0
+        },
+
+        refundedAt: {
+            type: Date,
+            default: null
+        },
+
+        stripeRefundId: {
+            type: String,
+            default: ''
+        },
+
+
+        refundNotificationAmount: {
+            type: Number,
+            min: 0,
+            default: 0
+        },
+
+        restaurantRefundEmailState: {
+            type: String,
+            enum: ['pending', 'sending', 'sent'],
+            default: 'pending'
+        },
+
+        restaurantRefundEmailSentAt: { type: Date, default: null },
+
+        customerRefundEmailState: {
+            type: String,
+            enum: ['pending', 'sending', 'sent'],
+            default: 'pending'
+        },
+
+        customerRefundEmailSentAt: { type: Date, default: null },
+
         restaurantEmailState: {
             type: String,
             enum: ['pending', 'sending', 'sent'],
@@ -158,6 +176,14 @@ const orderSchema = new mongoose.Schema(
         },
 
         restaurantEmailSentAt: { type: Date, default: null },
+
+        customerEmailState: {
+            type: String,
+            enum: ['pending', 'sending', 'sent'],
+            default: 'pending'
+        },
+
+        customerEmailSentAt: { type: Date, default: null },
 
         confirmationTokenHash: {
             type: String,

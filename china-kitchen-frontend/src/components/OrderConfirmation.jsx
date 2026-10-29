@@ -8,8 +8,8 @@ import axios
 
 import {
     Link,
-    useLocation,
-    useParams
+    useParams,
+    useSearchParams
 } from 'react-router-dom';
 
 import {
@@ -27,8 +27,16 @@ const OrderConfirmation = ({
         useParams();
 
 
-    const location =
-        useLocation();
+    const [
+        searchParams
+    ] =
+        useSearchParams();
+
+
+    const token =
+        searchParams.get(
+            'token'
+        ) || '';
 
 
     const [
@@ -36,12 +44,7 @@ const OrderConfirmation = ({
         setOrder
     ] =
         useState(
-
-            location.state
-                ?.order ||
-
             null
-
         );
 
 
@@ -50,10 +53,7 @@ const OrderConfirmation = ({
         setLoading
     ] =
         useState(
-
-            !location.state
-                ?.order
-
+            true
         );
 
 
@@ -66,98 +66,213 @@ const OrderConfirmation = ({
 
     useEffect(() => {
 
-        if (
-            location.state
-                ?.order
-        ) {
-
-            setLoading(
-                false
-            );
-
-            return;
-
-        }
+        let cancelled =
+            false;
 
 
-        if (
-            !logInState
-        ) {
-
-            setError(
-                'This order confirmation is no longer available.'
-            );
-
-            setLoading(
-                false
-            );
-
-            return;
-
-        }
+        const wait =
+            milliseconds =>
+                new Promise(
+                    resolve =>
+                        setTimeout(
+                            resolve,
+                            milliseconds
+                        )
+                );
 
 
-        const fetchOrder =
+        const fetchPaidOrder =
             async () => {
 
-                try {
+                if (
+                    !id
+                ) {
 
-                    const response =
-                        await axios.get(
+                    if (
+                        !cancelled
+                    ) {
 
-                            `http://localhost:8000/orders/${id}`,
+                        setError(
+                            'This order confirmation link is invalid.'
+                        );
 
-                            {
-                                withCredentials:
-                                    true
-                            }
+                        setLoading(
+                            false
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+
+                // Stripe can redirect the browser a moment before
+                // our webhook has finished marking the order as paid.
+                // Retry briefly instead of showing a false error.
+                const maximumAttempts =
+                    8;
+
+
+                for (
+                    let attempt = 1;
+                    attempt <= maximumAttempts;
+                    attempt += 1
+                ) {
+
+                    try {
+
+                        const response =
+                            token
+
+                                ? await axios.get(
+
+                                    `http://localhost:8000/orders/public/${id}`,
+
+                                    {
+                                        params: {
+                                            token
+                                        }
+                                    }
+
+                                )
+
+                                : await axios.get(
+
+                                    `http://localhost:8000/orders/${id}`,
+
+                                    {
+                                        withCredentials:
+                                            true
+                                    }
+
+                                );
+
+
+                        if (
+                            cancelled
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        const paidOrder =
+                            response.data.order;
+
+
+                        setOrder(
+                            paidOrder
+                        );
+
+
+                        // Only clear the cart after the backend has
+                        // verified the token AND confirmed payment.
+                        localStorage.removeItem(
+                            'TakeawayCart'
+                        );
+
+
+                        // ShoppingCart state lives in Takeaway.jsx.
+                        // This event lets Takeaway clear its in-memory
+                        // cart if it is currently mounted.
+                        window.dispatchEvent(
+                            new Event(
+                                'takeaway-cart-cleared'
+                            )
+                        );
+
+
+                        setError(
+                            ''
+                        );
+
+                        setLoading(
+                            false
+                        );
+
+                        return;
+
+                    }
+
+                    catch (error) {
+
+                        if (
+                            cancelled
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        const status =
+                            error.response
+                                ?.status;
+
+
+                        // The public endpoint returns 404 while the
+                        // order is still "not paid". Give the Stripe
+                        // webhook a few seconds to finish.
+                        if (
+                            token &&
+                            status === 404 &&
+                            attempt < maximumAttempts
+                        ) {
+
+                            await wait(
+                                1000
+                            );
+
+                            continue;
+
+                        }
+
+
+                        console.error(
+                            'Get paid order error:',
+                            error
+                        );
+
+
+                        setError(
+
+                            error.response
+                                ?.data
+                                ?.message ||
+
+                            'Unable to verify this paid order.'
 
                         );
 
 
-                    setOrder(
-                        response.data.order
-                    );
+                        setLoading(
+                            false
+                        );
 
-                }
+                        return;
 
-                catch (error) {
-
-                    console.error(
-                        'Get order error:',
-                        error
-                    );
-
-
-                    setError(
-
-                        error.response
-                            ?.data
-                            ?.message ||
-
-                        'Failed to load order'
-
-                    );
-
-                }
-
-                finally {
-
-                    setLoading(
-                        false
-                    );
+                    }
 
                 }
 
             };
 
 
-        fetchOrder();
+        fetchPaidOrder();
+
+
+        return () => {
+
+            cancelled =
+                true;
+
+        };
 
     }, [
         id,
-        logInState,
-        location.state
+        token
     ]);
 
 
@@ -265,9 +380,65 @@ const OrderConfirmation = ({
 
             <Alert variant="success">
 
-                Your order has been submitted.
+                Payment successful. Your order has been confirmed.
 
             </Alert>
+
+
+            {
+                order.refundStatus ===
+                'full' && (
+
+                    <Alert variant="warning">
+
+                        <strong>
+                            This order has been fully refunded.
+                        </strong>
+
+                        <br />
+
+                        Refunded:{' £'}
+
+                        {
+                            Number(
+                                order.refundedAmount ||
+                                0
+                            )
+                                .toFixed(2)
+                        }
+
+                    </Alert>
+
+                )
+            }
+
+
+            {
+                order.refundStatus ===
+                'partial' && (
+
+                    <Alert variant="warning">
+
+                        <strong>
+                            This order has been partially refunded.
+                        </strong>
+
+                        <br />
+
+                        Refunded so far:{' £'}
+
+                        {
+                            Number(
+                                order.refundedAmount ||
+                                0
+                            )
+                                .toFixed(2)
+                        }
+
+                    </Alert>
+
+                )
+            }
 
 
             <p>

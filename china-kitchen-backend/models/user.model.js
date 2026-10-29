@@ -119,6 +119,11 @@ const userSchema = new mongoose.Schema({
         maxlength: 12
     },
 
+    deliveryUdprn: {
+        type: Number,
+        default: null
+    },
+
     deliveryLongitude: {
         type: Number,
         default: null
