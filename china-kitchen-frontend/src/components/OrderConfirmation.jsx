@@ -611,7 +611,7 @@ const OrderConfirmation = ({
             </h4>
 
 
-            <ul>
+            <div className="border rounded mb-3">
 
                 {
                     items.map(
@@ -620,54 +620,83 @@ const OrderConfirmation = ({
                             index
                         ) => (
 
-                            <li
+                            <div
                                 key={
                                     item._id ||
                                     `${item.dishId}-${index}`
                                 }
+                                className={
+                                    `p-3 ${index <
+                                        items.length - 1
+                                        ? 'border-bottom'
+                                        : ''
+                                    }`
+                                }
                             >
 
-                                {
-                                    item.quantity
-                                }
+                                <div className="d-flex justify-content-between align-items-start gap-3">
 
-                                {' × '}
+                                    <div className="flex-grow-1">
 
-                                {
-                                    item.name
-                                }
+                                        <div className="d-flex align-items-start gap-2">
 
-
-                                {
-                                    item.rice &&
-                                    ` + ${item.rice}`
-                                }
+                                            <strong
+                                                className="text-nowrap"
+                                            >
+                                                {item.dishId}
+                                            </strong>
 
 
-                                {' — £'}
+                                            <strong>
+                                                {item.name}
+                                            </strong>
 
-                                {
-                                    (
-                                        Number(
-                                            item.price ||
-                                            0
-                                        ) *
+                                        </div>
 
-                                        Number(
-                                            item.quantity ||
-                                            0
-                                        )
-                                    )
-                                        .toFixed(2)
-                                }
 
-                            </li>
+                                        <div className="text-muted ms-4 mt-1">
+
+                                            Quantity:{' '}
+
+                                            {
+                                                item.quantity
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <strong className="text-nowrap">
+
+                                        £{
+
+                                            (
+                                                Number(
+                                                    item.price ||
+                                                    0
+                                                ) *
+
+                                                Number(
+                                                    item.quantity ||
+                                                    0
+                                                )
+                                            )
+                                                .toFixed(2)
+
+                                        }
+
+                                    </strong>
+
+                                </div>
+
+                            </div>
 
                         )
                     )
                 }
 
-            </ul>
+            </div>
 
 
             <p>

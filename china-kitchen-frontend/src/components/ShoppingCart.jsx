@@ -1566,5 +1566,4 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
 
 };
 
-
 export default ShoppingCart;
