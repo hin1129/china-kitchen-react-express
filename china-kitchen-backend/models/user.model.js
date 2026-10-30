@@ -1,145 +1,115 @@
-// import mongoose from 'mongoose'
-// import validator from 'validator';
-
-// const userSchema = new mongoose.Schema({
-//     fullName: {
-//         type: String,
-//         required: true
-//     },
-//     username: {
-//         type: String,
-//         required: true,
-//         unique: true,
-//     },
-//     email: {
-//         type: String,
-//         required: true,
-//         unique: true,
-//         validate: {
-//             validator: (value) => validator.isEmail(value),
-//             message: 'invalid email'
-//         }
-//     },
-//     password: {
-//         type: String,
-//         required: true,
-//     },
-//     isEmailVerified: {
-//         type: Boolean,
-//         default: false
-//     },
-//     emailVerificationToken: String,
-//     address: { type: String },
-//     phoneNumber: { type: Number },
-//     postcode: { type: String },
-// });
-
-// const UserDB = mongoose.model(`user`, userSchema);
-// export default UserDB;
-
-
-
-import mongoose from 'mongoose';
-import validator from 'validator';
+import mongoose from "mongoose";
+import validator from "validator";
 
 const userSchema = new mongoose.Schema({
-    fullName: {
-        type: String,
-        required: true,
-        trim: true,
-        maxlength: 100
+  fullName: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 100,
+  },
+
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    minlength: 3,
+    maxlength: 20,
+  },
+
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+    maxlength: 254,
+    validate: {
+      validator: (value) => validator.isEmail(value),
+      message: "Invalid email",
     },
+  },
 
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        minlength: 3,
-        maxlength: 20
-    },
+  password: {
+    type: String,
+    required: true,
+  },
 
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        lowercase: true,
-        trim: true,
-        maxlength: 254,
-        validate: {
-            validator: value => validator.isEmail(value),
-            message: 'Invalid email'
-        }
-    },
+  isEmailVerified: {
+    type: Boolean,
+    default: false,
+  },
 
-    password: {
-        type: String,
-        required: true
-    },
+  emailVerificationToken: String,
 
-    isEmailVerified: {
-        type: Boolean,
-        default: false
-    },
+  phoneNumber: {
+    type: String,
+    default: "",
+    trim: true,
+    maxlength: 30,
+  },
 
-    emailVerificationToken: String,
+  addressLine1: {
+    type: String,
+    default: "",
+    trim: true,
+    maxlength: 120,
+  },
 
-    phoneNumber: {
-        type: String,
-        default: '',
-        trim: true,
-        maxlength: 30
-    },
+  addressLine2: {
+    type: String,
+    default: "",
+    trim: true,
+    maxlength: 120,
+  },
 
-    addressLine1: {
-        type: String,
-        default: '',
-        trim: true,
-        maxlength: 120
-    },
+  city: {
+    type: String,
+    default: "",
+    trim: true,
+    maxlength: 100,
+  },
 
-    addressLine2: {
-        type: String,
-        default: '',
-        trim: true,
-        maxlength: 120
-    },
+  postcode: {
+    type: String,
+    default: "",
+    trim: true,
+    maxlength: 12,
+  },
 
-    city: {
-        type: String,
-        default: '',
-        trim: true,
-        maxlength: 100
-    },
+  deliveryUdprn: {
+    type: Number,
+    default: null,
+  },
 
-    postcode: {
-        type: String,
-        default: '',
-        trim: true,
-        maxlength: 12
-    },
+  deliveryLongitude: {
+    type: Number,
+    default: null,
+  },
 
-    deliveryUdprn: {
-        type: Number,
-        default: null
-    },
+  deliveryLatitude: {
+    type: Number,
+    default: null,
+  },
 
-    deliveryLongitude: {
-        type: Number,
-        default: null
-    },
+  role: {
+    type: String,
+    enum: ["customer", "admin"],
+    default: "customer",
+  },
 
-    deliveryLatitude: {
-        type: Number,
-        default: null
-    },
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false,
+  },
 
-    role: {
-        type: String,
-        enum: ['customer', 'admin'],
-        default: 'customer'
-    }
+  twoFactorSecretEncrypted: {
+    type: String,
+    default: "",
+    select: false,
+  },
 });
 
-const User = mongoose.model('user', userSchema);
+const User = mongoose.model("user", userSchema);
 export default User;

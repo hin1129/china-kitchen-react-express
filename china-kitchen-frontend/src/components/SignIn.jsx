@@ -1,144 +1,3 @@
-// import React, { useState, useEffect, useRef, useContext } from 'react'
-// import { useNavigate } from 'react-router-dom';
-// import axios from 'axios';
-// import Cookies from 'universal-cookie'
-// import jwt_decode from 'jwt-decode';
-
-// const SignIn = ({ setLogInState }) => {
-//     const [email, setEmail] = useState(``);
-//     const [password, setPassword] = useState(``);
-//     // const [errors, setErrors] = useState({ email: '', password: '' });
-//     const [errors, setErrors] = useState(``);
-//     const cookies = new Cookies()
-//     const navigate = useNavigate();
-
-//     const submitSignUpPostRequest = async (user) => {
-//         try {
-//             console.log("Sending request with payload:", user); // debugging, Log the payload
-
-//             const response = await axios.post("http://localhost:8000/signin", (user), {
-//                 headers: {
-//                     "Content-Type": "application/json"
-//                 },
-//                 // withCredentials: true, // debugging, did not have this line of code before
-//             })
-
-//             console.log("Response Data:", response.data); // debugging, Log the full response data
-//             return (response.data)
-//         }
-//         catch (error) {
-//             alert(`SignIn - handleSignIn`)
-//             console.log("Error during sign-in request:", error) // debugging, Log the error details
-//             throw error;
-//         }
-//     }
-
-//     const handleSignIn = async (event) => {
-//         event.preventDefault();
-//         // debugging, log the sign-in payload for debugging
-//         console.log("SIGNIN PAYLOAD", { email, password });
-
-//         // validation
-//         const validationErrors = {};
-//         if (!email) { validationErrors.email = 'Email is required.'; }
-//         if (!password) { validationErrors.password = 'Password is required.'; }
-//         setErrors(validationErrors);
-//         if (Object.keys(validationErrors).length > 0) { return; }
-
-//         try {
-//             const trimmedEmail = email.trim();
-//             const trimmedPassword = password.trim();
-//             const user = { email: trimmedEmail, password: trimmedPassword }
-//             const responseData = await submitSignUpPostRequest(user)
-//             console.log("Received Response:", responseData) // debugging, log the response data from the backend
-
-//             // // token in header
-//             // const headerToken = responseData.headers['authorization'].split(' ')[1]
-//             // const headerToken = responseData.headers.authorization.split(' ')[1]; // Extract the token
-//             // console.log(`headerToken: ${headerToken}`)
-//             // token in cookies
-//             // const cookiesToken = responseData.cookie
-//             // console.log(cookiesToken)
-
-//             // key, value, accessible across all pages of website
-//             const token = responseData.token;
-//             const decodedToken = jwt_decode(token);
-//             const expirationTime = decodedToken.exp * 1000;
-//             localStorage.setItem('TokenExpiration', expirationTime);
-//             localStorage.setItem('Token', token)
-//             localStorage.setItem('LoggedIn', true)
-//             localStorage.setItem('Username', responseData.username)
-//             // cookies.set("Token", responseData.token, { path: "/", })
-//             cookies.set("Token", responseData.token)
-//             setLogInState(true)
-//             navigate('/')
-//             alert(responseData.message)//
-//         }
-//         catch (error) {
-//             alert(`SignIn - handleSignIn`)
-//             console.log("Error during sign-in:", error)  // debugging, log any errors that occur
-
-//             if (error?.response?.status === 404) {
-//                 setErrors({ email: 'Email does not exist', password: '' });
-//             }
-//             else if (error?.response?.status === 400) {
-//                 setErrors({ ...errors, password: 'Invalid password' });
-//             }
-//             else {
-//                 setErrors({ email: '', password: 'An unknown error occurred' });
-//             }
-//         }
-//     }
-
-//     const handleEmailChange = (event) => {
-//         setEmail(event.target.value)
-//         setErrors({ ...errors, email: '' })
-//     }
-
-//     const handlePasswordChange = (event) => {
-//         setPassword(event.target.value)
-//         setErrors({ ...errors, password: '' })
-//     }
-
-//     return (
-//         <div>
-//             <br />SignIn
-
-//             <form onSubmit={handleSignIn}>
-//                 <label htmlFor="email">email:</label>
-//                 <input
-//                     type="email"
-//                     name="email"
-//                     id="email"
-//                     value={email}
-//                     onChange={handleEmailChange}
-//                 />
-//                 {errors.email && <div role="alert">{errors.email}</div>}
-//                 <br />
-
-//                 <label htmlFor="password">password:</label>
-//                 <input
-//                     type="password"
-//                     name="password"
-//                     id="password"
-//                     value={password}
-//                     onChange={handlePasswordChange}
-//                 />
-//                 {errors.password && <div role="alert">{errors.password}</div>}
-//                 <br />
-
-//                 <input
-//                     type="submit"
-//                     value="sign in"
-//                     disabled={!email.trim() || !password.trim()}
-//                 />
-//             </form>
-//         </div>
-//     )
-// }
-
-// export default SignIn
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -149,8 +8,44 @@ const SignIn = ({ setLogInState, setCurrentUser }) => {
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
 
+    const [twoFactorStep, setTwoFactorStep] = useState('');
+    const [twoFactorCode, setTwoFactorCode] = useState('');
+    const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
+    const [twoFactorMessage, setTwoFactorMessage] = useState('');
+
     const navigate = useNavigate();
     const location = useLocation();
+
+    const finishLogin = (userData) => {
+        setCurrentUser(userData);
+        setLogInState(true);
+
+        const returnTo =
+            location.state?.returnTo || '/';
+
+        navigate(returnTo, {
+            replace: true
+        });
+    };
+
+    const startTwoFactorSetup = async () => {
+        const response = await axios.post(
+            'http://localhost:8000/admin/2fa/setup',
+            {},
+            {
+                withCredentials: true
+            }
+        );
+
+        setQrCodeDataUrl(
+            response.data.qrCodeDataUrl
+        );
+
+        setTwoFactorStep('setup');
+        setTwoFactorMessage(
+            'Scan this QR code with your authenticator app, then enter the 6-digit code.'
+        );
+    };
 
     const handleSignIn = async (event) => {
         event.preventDefault();
@@ -158,20 +53,25 @@ const SignIn = ({ setLogInState, setCurrentUser }) => {
         const validationErrors = {};
 
         if (!email.trim()) {
-            validationErrors.email = 'Email is required.';
+            validationErrors.email =
+                'Email is required.';
         }
 
         if (!password) {
-            validationErrors.password = 'Password is required.';
+            validationErrors.password =
+                'Password is required.';
         }
 
         setErrors(validationErrors);
 
-        if (Object.keys(validationErrors).length > 0) {
+        if (
+            Object.keys(validationErrors).length > 0
+        ) {
             return;
         }
 
         setSubmitting(true);
+        setTwoFactorMessage('');
 
         try {
             const response = await axios.post(
@@ -186,40 +86,221 @@ const SignIn = ({ setLogInState, setCurrentUser }) => {
             );
 
             const responseData = response.data;
-            const userData = responseData.userData || responseData.user || responseData;
 
-            setCurrentUser(userData);
-            setLogInState(true);
+            if (
+                responseData.requiresTwoFactorSetup
+            ) {
+                await startTwoFactorSetup();
+                return;
+            }
 
-            const returnTo = location.state?.returnTo || '/';
-            navigate(returnTo, { replace: true });
-        } catch (error) {
-            console.error('Sign in failed:', error);
+            if (
+                responseData.requiresTwoFactor
+            ) {
+                setTwoFactorStep('verify');
+                setTwoFactorMessage(
+                    'Enter the 6-digit code from your authenticator app.'
+                );
+                return;
+            }
+
+            const userData =
+                responseData.userData ||
+                responseData.user ||
+                responseData;
+
+            finishLogin(userData);
+        }
+        catch (error) {
+            console.error(
+                'Sign in failed:',
+                error
+            );
 
             const message =
                 error.response?.data?.message ||
                 'Unable to sign in';
 
-            if (error.response?.status === 403) {
-                setErrors({
-                    email: '',
-                    password: message || 'Please verify your email before signing in.',
-                });
-            } else if (error.response?.status === 401) {
-                setErrors({
-                    email: '',
-                    password: message || 'Invalid email or password.',
-                });
-            } else {
+            if (
+                error.response?.status === 403
+            ) {
                 setErrors({
                     email: '',
                     password: message,
                 });
             }
-        } finally {
+            else if (
+                error.response?.status === 401
+            ) {
+                setErrors({
+                    email: '',
+                    password: message,
+                });
+            }
+            else {
+                setErrors({
+                    email: '',
+                    password: message,
+                });
+            }
+        }
+        finally {
             setSubmitting(false);
         }
     };
+
+    const handleTwoFactorSubmit =
+        async (event) => {
+            event.preventDefault();
+
+            if (
+                !/^\d{6}$/.test(
+                    twoFactorCode.trim()
+                )
+            ) {
+                setErrors({
+                    twoFactor:
+                        'Enter a valid 6-digit code.'
+                });
+
+                return;
+            }
+
+            setSubmitting(true);
+            setErrors({});
+            setTwoFactorMessage('');
+
+            try {
+                const endpoint =
+                    twoFactorStep === 'setup'
+                        ? 'http://localhost:8000/admin/2fa/setup/verify'
+                        : 'http://localhost:8000/admin/2fa/verify';
+
+                const response =
+                    await axios.post(
+                        endpoint,
+                        {
+                            code:
+                                twoFactorCode.trim()
+                        },
+                        {
+                            withCredentials:
+                                true
+                        }
+                    );
+
+                finishLogin(
+                    response.data.user
+                );
+            }
+            catch (error) {
+                console.error(
+                    '2FA failed:',
+                    error
+                );
+
+                setErrors({
+                    twoFactor:
+                        error.response?.data?.message ||
+                        'Unable to verify authentication code'
+                });
+            }
+            finally {
+                setSubmitting(false);
+            }
+        };
+
+    if (twoFactorStep) {
+        return (
+            <div>
+                <br />
+                <h2>
+                    Admin Two-Factor Authentication
+                </h2>
+
+                {twoFactorStep === 'setup' &&
+                    qrCodeDataUrl && (
+                        <div>
+                            <p>
+                                Scan this QR code with
+                                your authenticator app.
+                            </p>
+
+                            <img
+                                src={qrCodeDataUrl}
+                                alt="China Kitchen admin two-factor authentication QR code"
+                                style={{
+                                    width: '220px',
+                                    height: '220px'
+                                }}
+                            />
+                        </div>
+                    )}
+
+                {twoFactorMessage && (
+                    <p>{twoFactorMessage}</p>
+                )}
+
+                <form
+                    onSubmit={
+                        handleTwoFactorSubmit
+                    }
+                >
+                    <label htmlFor="twoFactorCode">
+                        6-digit code:
+                    </label>
+
+                    <input
+                        id="twoFactorCode"
+                        name="twoFactorCode"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength="6"
+                        value={twoFactorCode}
+                        onChange={(event) => {
+                            const value =
+                                event.target.value
+                                    .replace(/\D/g, '')
+                                    .slice(0, 6);
+
+                            setTwoFactorCode(value);
+
+                            setErrors(
+                                previous => ({
+                                    ...previous,
+                                    twoFactor: ''
+                                })
+                            );
+                        }}
+                    />
+
+                    {errors.twoFactor && (
+                        <div role="alert">
+                            {errors.twoFactor}
+                        </div>
+                    )}
+
+                    <br />
+
+                    <input
+                        type="submit"
+                        value={
+                            submitting
+                                ? 'Verifying...'
+                                : twoFactorStep === 'setup'
+                                    ? 'Enable 2FA'
+                                    : 'Verify and sign in'
+                        }
+                        disabled={
+                            submitting ||
+                            twoFactorCode.length !== 6
+                        }
+                    />
+                </form>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -227,38 +308,80 @@ const SignIn = ({ setLogInState, setCurrentUser }) => {
             <h2>Sign In</h2>
 
             <form onSubmit={handleSignIn}>
-                <label htmlFor="email">Email:</label>
+                <label htmlFor="email">
+                    Email:
+                </label>
+
                 <input
                     type="email"
                     name="email"
                     id="email"
                     value={email}
                     onChange={(event) => {
-                        setEmail(event.target.value);
-                        setErrors((previous) => ({ ...previous, email: '' }));
+                        setEmail(
+                            event.target.value
+                        );
+
+                        setErrors(
+                            previous => ({
+                                ...previous,
+                                email: ''
+                            })
+                        );
                     }}
                 />
-                {errors.email && <div role="alert">{errors.email}</div>}
+
+                {errors.email && (
+                    <div role="alert">
+                        {errors.email}
+                    </div>
+                )}
+
                 <br />
 
-                <label htmlFor="password">Password:</label>
+                <label htmlFor="password">
+                    Password:
+                </label>
+
                 <input
                     type="password"
                     name="password"
                     id="password"
                     value={password}
                     onChange={(event) => {
-                        setPassword(event.target.value);
-                        setErrors((previous) => ({ ...previous, password: '' }));
+                        setPassword(
+                            event.target.value
+                        );
+
+                        setErrors(
+                            previous => ({
+                                ...previous,
+                                password: ''
+                            })
+                        );
                     }}
                 />
-                {errors.password && <div role="alert">{errors.password}</div>}
+
+                {errors.password && (
+                    <div role="alert">
+                        {errors.password}
+                    </div>
+                )}
+
                 <br />
 
                 <input
                     type="submit"
-                    value={submitting ? 'Signing in...' : 'Sign in'}
-                    disabled={submitting || !email.trim() || !password}
+                    value={
+                        submitting
+                            ? 'Signing in...'
+                            : 'Sign in'
+                    }
+                    disabled={
+                        submitting ||
+                        !email.trim() ||
+                        !password
+                    }
                 />
             </form>
         </div>
