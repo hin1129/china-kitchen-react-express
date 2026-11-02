@@ -17,8 +17,7 @@ const twoFactorLimiter = rateLimit({
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {
-    message:
-      "Too many two-factor attempts. Please wait and try again.",
+    message: "Too many two-factor attempts. Please wait and try again.",
   },
 });
 
@@ -39,17 +38,12 @@ const clearPendingCookie = (response) => {
   });
 };
 
-const getPendingAdmin = async (
-  request,
-  response
-) => {
-  const pendingToken =
-    request.cookies?.admin2fa;
+const getPendingAdmin = async (request, response) => {
+  const pendingToken = request.cookies?.admin2fa;
 
   if (!pendingToken) {
     response.status(401).json({
-      message:
-        "Admin sign-in challenge expired. Please sign in again.",
+      message: "Admin sign-in challenge expired. Please sign in again.",
       code: "ADMIN_2FA_CHALLENGE_EXPIRED",
     });
 
@@ -59,27 +53,19 @@ const getPendingAdmin = async (
   let decoded;
 
   try {
-    decoded = jwt.verify(
-      pendingToken,
-      process.env.JWT_SECRET_KEY
-    );
-  }
-  catch (error) {
+    decoded = jwt.verify(pendingToken, process.env.JWT_SECRET_KEY);
+  } catch (error) {
     clearPendingCookie(response);
 
     response.status(401).json({
-      message:
-        "Admin sign-in challenge expired. Please sign in again.",
+      message: "Admin sign-in challenge expired. Please sign in again.",
       code: "ADMIN_2FA_CHALLENGE_EXPIRED",
     });
 
     return null;
   }
 
-  if (
-    decoded.purpose !== "admin-2fa" ||
-    !decoded.userId
-  ) {
+  if (decoded.purpose !== "admin-2fa" || !decoded.userId) {
     clearPendingCookie(response);
 
     response.status(401).json({
@@ -89,10 +75,8 @@ const getPendingAdmin = async (
     return null;
   }
 
-  const user = await User.findById(
-    decoded.userId
-  ).select(
-    "+twoFactorSecretEncrypted"
+  const user = await User.findById(decoded.userId).select(
+    "+twoFactorSecretEncrypted",
   );
 
   if (!user || user.role !== "admin") {
@@ -108,10 +92,7 @@ const getPendingAdmin = async (
   return user;
 };
 
-const issueAdminSession = (
-  user,
-  response
-) => {
+const issueAdminSession = (user, response) => {
   const token = jwt.sign(
     {
       userId: user._id.toString(),
@@ -120,22 +101,15 @@ const issueAdminSession = (
     process.env.JWT_SECRET_KEY,
     {
       expiresIn: "1h",
-    }
+    },
   );
 
-  response.cookie(
-    "token",
-    token,
-    authCookieOptions
-  );
+  response.cookie("token", token, authCookieOptions);
 
   clearPendingCookie(response);
 };
 
-const verifyCode = (
-  secret,
-  token
-) => {
+const verifyCode = (secret, token) => {
   return speakeasy.totp.verify({
     secret,
     encoding: "base32",
@@ -144,78 +118,51 @@ const verifyCode = (
   });
 };
 
-router.post(
-  "/admin/2fa/setup",
-  twoFactorLimiter,
-  async (request, response) => {
-    try {
-      const user =
-        await getPendingAdmin(
-          request,
-          response
-        );
+router.post("/admin/2fa/setup", twoFactorLimiter, async (request, response) => {
+  try {
+    const user = await getPendingAdmin(request, response);
 
-      if (!user) {
-        return;
-      }
+    if (!user) {
+      return;
+    }
 
-      if (user.twoFactorEnabled) {
-        return response.status(400).json({
-          message:
-            "Two-factor authentication is already enabled",
-        });
-      }
-
-      const secret =
-        speakeasy.generateSecret({
-          length: 32,
-          name:
-            `China Kitchen (${user.email})`,
-          issuer: "China Kitchen",
-        });
-
-      user.twoFactorSecretEncrypted =
-        encryptTwoFactorSecret(
-          secret.base32
-        );
-
-      await user.save();
-
-      const qrCodeDataUrl =
-        await QRCode.toDataURL(
-          secret.otpauth_url
-        );
-
-      return response.json({
-        message:
-          "Scan the QR code and enter the 6-digit code to finish setup",
-        qrCodeDataUrl,
+    if (user.twoFactorEnabled) {
+      return response.status(400).json({
+        message: "Two-factor authentication is already enabled",
       });
     }
-    catch (error) {
-      console.error(
-        "2FA setup error:",
-        error
-      );
 
-      return response.status(500).json({
-        message:
-          "Failed to start two-factor authentication setup",
-      });
-    }
+    const secret = speakeasy.generateSecret({
+      length: 32,
+      name: `China Kitchen (${user.email})`,
+      issuer: "China Kitchen",
+    });
+
+    user.twoFactorSecretEncrypted = encryptTwoFactorSecret(secret.base32);
+
+    await user.save();
+
+    const qrCodeDataUrl = await QRCode.toDataURL(secret.otpauth_url);
+
+    return response.json({
+      message: "Scan the QR code and enter the 6-digit code to finish setup",
+      qrCodeDataUrl,
+    });
+  } catch (error) {
+    console.error("2FA setup error:", error);
+
+    return response.status(500).json({
+      message: "Failed to start two-factor authentication setup",
+    });
   }
-);
+});
 
 router.post(
   "/admin/2fa/setup/verify",
   twoFactorLimiter,
   async (request, response) => {
     try {
-      const user =
-        await getPendingAdmin(
-          request,
-          response
-        );
+      const user = await getPendingAdmin(request, response);
 
       if (!user) {
         return;
@@ -223,53 +170,39 @@ router.post(
 
       if (user.twoFactorEnabled) {
         return response.status(400).json({
-          message:
-            "Two-factor authentication is already enabled",
+          message: "Two-factor authentication is already enabled",
         });
       }
 
-      const token =
-        String(
-          request.body?.code || ""
-        ).trim();
+      const token = String(request.body?.code || "").trim();
 
       if (!/^\d{6}$/.test(token)) {
         return response.status(400).json({
-          message:
-            "Enter a valid 6-digit authentication code",
+          message: "Enter a valid 6-digit authentication code",
         });
       }
 
       if (!user.twoFactorSecretEncrypted) {
         return response.status(400).json({
-          message:
-            "Start two-factor setup again",
+          message: "Start two-factor setup again",
         });
       }
 
-      const secret =
-        decryptTwoFactorSecret(
-          user.twoFactorSecretEncrypted
-        );
+      const secret = decryptTwoFactorSecret(user.twoFactorSecretEncrypted);
 
       if (!verifyCode(secret, token)) {
         return response.status(401).json({
-          message:
-            "Invalid authentication code",
+          message: "Invalid authentication code",
         });
       }
 
       user.twoFactorEnabled = true;
       await user.save();
 
-      issueAdminSession(
-        user,
-        response
-      );
+      issueAdminSession(user, response);
 
       return response.json({
-        message:
-          "Two-factor authentication enabled",
+        message: "Two-factor authentication enabled",
         user: {
           id: user._id,
           username: user.username,
@@ -278,19 +211,14 @@ router.post(
           role: user.role,
         },
       });
-    }
-    catch (error) {
-      console.error(
-        "2FA setup verification error:",
-        error
-      );
+    } catch (error) {
+      console.error("2FA setup verification error:", error);
 
       return response.status(500).json({
-        message:
-          "Failed to verify two-factor authentication",
+        message: "Failed to verify two-factor authentication",
       });
     }
-  }
+  },
 );
 
 router.post(
@@ -298,54 +226,35 @@ router.post(
   twoFactorLimiter,
   async (request, response) => {
     try {
-      const user =
-        await getPendingAdmin(
-          request,
-          response
-        );
+      const user = await getPendingAdmin(request, response);
 
       if (!user) {
         return;
       }
 
-      if (
-        !user.twoFactorEnabled ||
-        !user.twoFactorSecretEncrypted
-      ) {
+      if (!user.twoFactorEnabled || !user.twoFactorSecretEncrypted) {
         return response.status(400).json({
-          message:
-            "Two-factor authentication setup is required",
+          message: "Two-factor authentication setup is required",
         });
       }
 
-      const token =
-        String(
-          request.body?.code || ""
-        ).trim();
+      const token = String(request.body?.code || "").trim();
 
       if (!/^\d{6}$/.test(token)) {
         return response.status(400).json({
-          message:
-            "Enter a valid 6-digit authentication code",
+          message: "Enter a valid 6-digit authentication code",
         });
       }
 
-      const secret =
-        decryptTwoFactorSecret(
-          user.twoFactorSecretEncrypted
-        );
+      const secret = decryptTwoFactorSecret(user.twoFactorSecretEncrypted);
 
       if (!verifyCode(secret, token)) {
         return response.status(401).json({
-          message:
-            "Invalid authentication code",
+          message: "Invalid authentication code",
         });
       }
 
-      issueAdminSession(
-        user,
-        response
-      );
+      issueAdminSession(user, response);
 
       return response.json({
         message: "Login successful",
@@ -357,19 +266,14 @@ router.post(
           role: user.role,
         },
       });
-    }
-    catch (error) {
-      console.error(
-        "2FA verification error:",
-        error
-      );
+    } catch (error) {
+      console.error("2FA verification error:", error);
 
       return response.status(500).json({
-        message:
-          "Failed to verify two-factor authentication",
+        message: "Failed to verify two-factor authentication",
       });
     }
-  }
+  },
 );
 
 export default router;

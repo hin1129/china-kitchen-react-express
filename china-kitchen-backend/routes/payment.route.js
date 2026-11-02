@@ -130,7 +130,7 @@ router.post("/checkout/retry", async (request, response) => {
   }
 });
 
-router.get("/orders/public/:id", async (request, response) => {
+router.get("/orders/public/:id", verifyToken, async (request, response) => {
   try {
     const order = await getOrderWithToken(
       request.params.id,
@@ -141,10 +141,16 @@ router.get("/orders/public/:id", async (request, response) => {
       return response.status(404).json({ message: "Paid order not found" });
     }
 
+    if (!order.userId || order.userId.toString() !== request.user.userId) {
+      return response.status(403).json({
+        message: "You do not have permission to view this order",
+      });
+    }
+
     order.confirmationTokenHash = undefined;
     return response.json({ order });
   } catch (error) {
-    console.error("Public order confirmation error:", error.message);
+    console.error("Order confirmation error:", error.message);
     return response
       .status(500)
       .json({ message: "Unable to load order confirmation" });
