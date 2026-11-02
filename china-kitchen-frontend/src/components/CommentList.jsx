@@ -1,153 +1,43 @@
-// import React, { useEffect, useState } from 'react'
-// import axios from 'axios'
-// import Comment from './Comment'
-
-// const CommentList = ({ logInState }) => {
-//     const [commentList, setCommentList] = useState([])
-
-//     const getCommentListGetRequest = async () => {
-//         try {
-//             const response = await axios.get(`http://localhost:8000/`)
-//             setCommentList(response.data)
-//             console.log(response.data)
-//         }
-//         catch (error) {
-//             alert(`CommentList - GetRequest error`)
-//             console.dir(error)
-//         }
-//     }
-
-//     // rerun server if login state changes (hide expand button)
-//     useEffect(() => {
-//         getCommentListGetRequest()
-//     }, [logInState])
-//     // useEffect(() => {
-//     //     getCommentListGetRequest()
-//     // }, [commentList])
-
-//     // edit comment
-//     const handleEditComment = (editedComment) => {
-//         setCommentList((previousComments) => {
-//             // iterate existing array and update the edited comment
-//             return previousComments.map(
-//                 (comment) => comment._id === editedComment._id ? editedComment : comment
-//             );
-//         });
-//     };
-
-//     // delete comment
-//     const handleDeleteComment = (deleteCommentID) => {
-//         // previous state value of comment list
-//         setCommentList((previousComments) => {
-//             // iterate existing array, skip deleteCommentID, create array
-//             return previousComments.filter(
-//                 (comment) => comment._id !== deleteCommentID
-//             );
-//         })
-//     }
-
-//     // reply to comment
-//     const handleReplyComment = (replyCommentID, newReply) => {
-//         setCommentList((previousComments) => {
-//             return previousComments.map((comment) => {
-//                 if (comment._id === replyCommentID) {
-//                     // Update comment model's replyComments array with new reply
-//                     const updatedReplies = [...comment.replyComments, newReply];
-//                     return { ...comment, replyComments: updatedReplies };
-//                 }
-//                 return comment;
-//             });
-//         });
-//     };
-
-//     // pass data to comment component
-//     const allComments = commentList.map(
-//         currentComment => {
-//             return (
-//                 <Comment
-//                     commentListProps={currentComment}
-//                     key={currentComment._id}
-//                     onEdit={handleEditComment}
-//                     onDelete={handleDeleteComment}
-//                     onReply={handleReplyComment}
-//                     logInState={logInState}
-//                 />
-//             )
-//         }
-//     )
-
-//     return (
-//         <div>
-//             {allComments}
-//         </div>
-//     )
-// }
-
-// export default CommentList
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Comment from './Comment';
+import { Link } from 'react-router-dom';
 
 const CommentList = ({ logInState, currentUser }) => {
     const [commentList, setCommentList] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     const getCommentListGetRequest = async () => {
         try {
+            setLoading(true);
             const response = await axios.get('http://localhost:8000/');
             setCommentList(response.data);
+            setError('');
         } catch (error) {
             console.error(error);
-            alert('Failed to load comments');
-        }
+            setError('Reviews could not be loaded. Please try again.');
+        } finally { setLoading(false); }
     };
 
-    useEffect(() => {
-        getCommentListGetRequest();
-    }, [logInState]);
-
-    const handleEditComment = (editedComment) => {
-        setCommentList((previousComments) =>
-            previousComments.map((comment) =>
-                comment._id === editedComment._id ? editedComment : comment
-            )
-        );
-    };
-
-    const handleDeleteComment = (deleteCommentID) => {
-        setCommentList((previousComments) =>
-            previousComments.filter((comment) => comment._id !== deleteCommentID)
-        );
-    };
-
-    const handleReplyComment = (replyCommentID, newReply) => {
-        setCommentList((previousComments) =>
-            previousComments.map((comment) =>
-                comment._id === replyCommentID
-                    ? {
-                        ...comment,
-                        replyComments: [...(comment.replyComments || []), newReply],
-                    }
-                    : comment
-            )
-        );
-    };
+    useEffect(() => { getCommentListGetRequest(); }, [logInState]);
+    const handleEditComment = (editedComment) => setCommentList((prev) => prev.map((c) => c._id === editedComment._id ? editedComment : c));
+    const handleDeleteComment = (id) => setCommentList((prev) => prev.filter((c) => c._id !== id));
+    const handleReplyComment = (id, newReply) => setCommentList((prev) => prev.map((c) => c._id === id ? { ...c, replyComments: [...(c.replyComments || []), newReply] } : c));
 
     return (
-        <div>
-            {commentList.map((currentComment) => (
-                <Comment
-                    commentListProps={currentComment}
-                    key={currentComment._id}
-                    onEdit={handleEditComment}
-                    onDelete={handleDeleteComment}
-                    onReply={handleReplyComment}
-                    logInState={logInState}
-                    currentUser={currentUser}
-                />
-            ))}
-        </div>
+      <main className="content-page reviews-page">
+        <section className="page-hero reviews-hero">
+          <div><p className="eyebrow dark">CUSTOMER REVIEWS</p><h1>What our customers say</h1><p>Read feedback from China Kitchen customers.</p></div>
+          {logInState ? <Link className="primary-cta dark-button" to="/postcomment">Leave a review</Link> : <Link className="primary-cta dark-button" to="/signin">Sign in to review</Link>}
+        </section>
+        {loading && <div className="review-state">Loading reviews…</div>}
+        {error && <div className="review-state error-text">{error}</div>}
+        {!loading && !error && commentList.length === 0 && <div className="review-state"><h2>No reviews yet</h2><p>Be the first to leave a review.</p></div>}
+        <section className="reviews-list">
+          {commentList.map((currentComment) => <Comment commentListProps={currentComment} key={currentComment._id} onEdit={handleEditComment} onDelete={handleDeleteComment} onReply={handleReplyComment} logInState={logInState} currentUser={currentUser} />)}
+        </section>
+      </main>
     );
 };
-
 export default CommentList;

@@ -258,8 +258,7 @@ const Takeaway = ({ logInState, currentUser }) => {
             <h2>Menu</h2>
 
             <Nav
-                className="mb-4 sticky-top bg-light py-2 px-3 border rounded"
-                style={{ zIndex: 1000, top: '56px' }}
+                className="menu-category-nav mb-4"
             >
                 {categoryLinks.map((name) => (
                     <Nav.Item key={name} className="me-3">

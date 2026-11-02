@@ -170,125 +170,45 @@ const SignIn = ({ setLogInState, setCurrentUser }) => {
 
   if (twoFactorStep) {
     return (
-      <div>
-        <br />
-        <h2>Admin Two-Factor Authentication</h2>
-
-        {twoFactorStep === "setup" && qrCodeDataUrl && (
-          <div>
-            <p>Scan this QR code with your authenticator app.</p>
-
-            <img
-              src={qrCodeDataUrl}
-              alt="China Kitchen admin two-factor authentication QR code"
-              style={{
-                width: "220px",
-                height: "220px",
-              }}
-            />
+      <main className="auth-page">
+        <section className="auth-card auth-card-narrow">
+          <div className="auth-heading">
+            <p className="eyebrow dark">ADMIN SECURITY</p>
+            <h1>Two-factor authentication</h1>
+            <p>{twoFactorMessage || "Enter your authenticator code to continue."}</p>
           </div>
-        )}
-
-        {twoFactorMessage && <p>{twoFactorMessage}</p>}
-
-        <form onSubmit={handleTwoFactorSubmit}>
-          <label htmlFor="twoFactorCode">6-digit code:</label>
-
-          <input
-            id="twoFactorCode"
-            name="twoFactorCode"
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength="6"
-            value={twoFactorCode}
-            onChange={(event) => {
-              const value = event.target.value.replace(/\D/g, "").slice(0, 6);
-
-              setTwoFactorCode(value);
-
-              setErrors((previous) => ({
-                ...previous,
-                twoFactor: "",
-              }));
-            }}
-          />
-
-          {errors.twoFactor && <div role="alert">{errors.twoFactor}</div>}
-
-          <br />
-
-          <input
-            type="submit"
-            value={
-              submitting
-                ? "Verifying..."
-                : twoFactorStep === "setup"
-                  ? "Enable 2FA"
-                  : "Verify and sign in"
-            }
-            disabled={submitting || twoFactorCode.length !== 6}
-          />
-        </form>
-      </div>
+          {twoFactorStep === "setup" && qrCodeDataUrl && (
+            <div className="two-factor-qr"><img src={qrCodeDataUrl} alt="China Kitchen admin two-factor authentication QR code" /></div>
+          )}
+          <form onSubmit={handleTwoFactorSubmit} className="auth-form">
+            <div className="form-field">
+              <label htmlFor="twoFactorCode">6-digit code</label>
+              <input id="twoFactorCode" name="twoFactorCode" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength="6" value={twoFactorCode} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(0, 6); setTwoFactorCode(value); setErrors((previous) => ({ ...previous, twoFactor: "" })); }} placeholder="000000" />
+              {errors.twoFactor && <div className="form-error" role="alert">{errors.twoFactor}</div>}
+            </div>
+            <button className="auth-submit" type="submit" disabled={submitting || twoFactorCode.length !== 6}>{submitting ? "Verifying..." : twoFactorStep === "setup" ? "Enable 2FA" : "Verify and sign in"}</button>
+          </form>
+        </section>
+      </main>
     );
   }
 
   return (
-    <div>
-      <br />
-      <h2>Sign In</h2>
-
-      <form onSubmit={handleSignIn}>
-        <label htmlFor="email">Email:</label>
-
-        <input
-          type="email"
-          name="email"
-          id="email"
-          value={email}
-          onChange={(event) => {
-            setEmail(event.target.value);
-
-            setErrors((previous) => ({
-              ...previous,
-              email: "",
-            }));
-          }}
-        />
-
-        {errors.email && <div role="alert">{errors.email}</div>}
-
-        <br />
-
-        <label htmlFor="password">Password:</label>
-
-        <input
-          type="password"
-          name="password"
-          id="password"
-          value={password}
-          onChange={(event) => {
-            setPassword(event.target.value);
-
-            setErrors((previous) => ({
-              ...previous,
-              password: "",
-            }));
-          }}
-        />
-
-        {errors.password && <div role="alert">{errors.password}</div>}
-
-        <br />
-
-        <input
-          type="submit"
-          value={submitting ? "Signing in..." : "Sign in"}
-          disabled={submitting || !email.trim() || !password}
-        />
-      </form>
-    </div>
+    <main className="auth-page">
+      <section className="auth-card">
+        <div className="auth-heading">
+          <p className="eyebrow dark">WELCOME BACK</p>
+          <h1>Sign in</h1>
+          <p>Sign in to continue your order and view your account.</p>
+        </div>
+        <form onSubmit={handleSignIn} className="auth-form">
+          <div className="form-field"><label htmlFor="email">Email address</label><input type="email" name="email" id="email" autoComplete="email" value={email} onChange={(event) => { setEmail(event.target.value); setErrors((previous) => ({ ...previous, email: "" })); }} placeholder="you@example.com" />{errors.email && <div className="form-error" role="alert">{errors.email}</div>}</div>
+          <div className="form-field"><label htmlFor="password">Password</label><input type="password" name="password" id="password" autoComplete="current-password" value={password} onChange={(event) => { setPassword(event.target.value); setErrors((previous) => ({ ...previous, password: "" })); }} placeholder="Enter your password" />{errors.password && <div className="form-error" role="alert">{errors.password}</div>}</div>
+          <button className="auth-submit" type="submit" disabled={submitting || !email.trim() || !password}>{submitting ? "Signing in..." : "Sign in"}</button>
+        </form>
+        <p className="auth-switch">New to China Kitchen? <a href="/signup">Sign up</a></p>
+      </section>
+    </main>
   );
 };
 

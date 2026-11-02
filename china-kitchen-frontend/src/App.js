@@ -2,8 +2,7 @@
 // import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 // import { useEffect, useState } from 'react';
 // import MyHome from './components/MyHome';
-// import Header from './components/Header';
-// import Footer from './components/Footer';
+// // import Footer from './components/Footer';
 // import CommentList from './components/CommentList'
 // import PostComment from './components/PostComment';
 // import SignUp from './components/SignUp';
@@ -197,7 +196,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import MyHome from './components/MyHome';
-import Header from './components/Header';
 import Footer from './components/Footer';
 import CommentList from './components/CommentList';
 import PostComment from './components/PostComment';
@@ -276,7 +274,6 @@ function App() {
         handleLogout={handleLogout}
       />
 
-      <Header />
 
       <Routes>
         <Route path="/" element={<MyHome />} />

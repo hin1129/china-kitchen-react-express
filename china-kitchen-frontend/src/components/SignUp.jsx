@@ -1,189 +1,3 @@
-// import React, { useState } from 'react'
-// import axios from 'axios'
-// import { isEmail } from 'validator'
-// import { Link } from 'react-router-dom'
-
-// const SignUp = () => {
-//     const [fullName, setFullName] = useState(``)
-//     const [username, setUsername] = useState(``)
-//     const [email, setEmail] = useState(``)
-//     const [password, setPassword] = useState(``)
-//     const [errors, setErrors] = useState({})
-//     const [verificationLink, setVerificationLink] = useState(``)
-
-//     const restrictedWords = ['admin', 'root', 'guest', 'test'];
-
-//     const submitSignUpPostRequest = async (user) => {
-//         try {
-//             const response = await axios.post(`http://localhost:8000/signup`, user);
-//             return (response.data);
-//         }
-//         catch (error) {
-//             alert(`SignUp - PostRequest`)
-//             // error responses from server
-//             const errorResponse = error.response.data;
-//             if (errorResponse.error === 'Email already exists') {
-//                 setErrors({ ...errors, email: errorResponse.error });
-//             }
-//             else if (errorResponse.error === 'Username already exists') {
-//                 setErrors({ ...errors, username: errorResponse.error });
-//             }
-//         }
-//     }
-
-//     // handle form data
-//     const handleSignUp = async (event) => {
-//         event.preventDefault();
-
-//         const trimmedFullName = fullName.trim();
-//         const trimmedUsername = username.trim();
-//         const trimmedEmail = email.trim();
-//         const trimmedPassword = password.trim();
-//         // validation
-//         const validationErrors = {}
-
-//         const fullNameIsRestrictedWord = restrictedWords.some(word => fullName.toLowerCase().includes(word.toLowerCase()));
-//         if (!fullName) {
-//             validationErrors.fullName = "Full name is empty"
-//         }
-//         else if (fullNameIsRestrictedWord) {
-//             validationErrors.fullName = "full name contains restricted words"
-//         }
-
-//         const usernameIsRestrictedWord = restrictedWords.some((word) => username.toLowerCase().includes(word.toLowerCase()))
-//         if (username.length < 3 || username.length > 20) {
-//             validationErrors.username = "Username must be between 3-20 characters"
-//         }
-//         else if (usernameIsRestrictedWord) {
-//             validationErrors.username = "username contains restricted words"
-//         }
-
-//         if (!isEmail(email)) {
-//             validationErrors.email = "Not a valid email"
-//         }
-
-//         if (password.length < 8 || password.length > 40) {
-//             validationErrors.password = "Password must be between 8-40 characters";
-//         }
-//         else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[A-Za-z\d!@#$%^&*()]/.test(password)) {
-//             validationErrors.password = "Password must include at least 1 upper case letter, 1 lower case letter, 1 number, and 1 symbol";
-//         }
-
-//         setErrors(validationErrors)
-
-//         // return errors if true
-//         if (Object.keys(validationErrors).length > 0) { return }
-
-//         // reset previous validation errors
-//         setErrors({})
-
-//         // pass object to post request
-//         const createSignUpObject = {
-//             fullName: trimmedFullName,
-//             username: trimmedUsername,
-//             email: trimmedEmail,
-//             password: trimmedPassword
-//         }
-//         const signUpResponse = await submitSignUpPostRequest(createSignUpObject); // email verification
-//         console.log(createSignUpObject)
-//         alert("Sign Up form submitted")
-
-//         // email verification
-//         if (signUpResponse) {
-//             const verificationToken = signUpResponse.verificationToken;
-//             const verificationLink = `emailverification/${verificationToken}`;
-//             setVerificationLink(verificationLink);
-//         }
-//     }
-
-//     // clear errors when inputs change
-//     const handleUsernameChange = (event) => {
-//         setUsername(event.target.value);
-//         setErrors({ ...errors, username: '' });
-//     };
-
-//     const handleEmailChange = (event) => {
-//         setEmail(event.target.value);
-//         setErrors({ ...errors, email: '' });
-//     };
-
-//     return (
-//         <div>
-//             <br />SignUp
-
-//             <form onSubmit={handleSignUp}>
-//                 <label htmlFor="fullName">full name:</label>
-//                 <input
-//                     type="text"
-//                     name="fullName"
-//                     id="fullName"
-//                     value={fullName}
-//                     onChange={event => setFullName(event.target.value)}
-//                 />
-//                 <br />
-//                 {errors.fullName && <div role="alert">{errors.fullName}</div>}
-
-//                 <label htmlFor="username">username:</label>
-//                 <input
-//                     type="username"
-//                     name="username"
-//                     id="username"
-//                     value={username}
-//                     onChange={handleUsernameChange}
-//                 />
-//                 <br />
-//                 {errors.username && <div role="alert">{errors.username}</div>}
-
-//                 <label htmlFor="email">email:</label>
-//                 <input
-//                     type="email"
-//                     name="email"
-//                     id="email"
-//                     value={email}
-//                     onChange={handleEmailChange}
-//                 />
-//                 <br />
-//                 {errors.email && <div role="alert">{errors.email}</div>}
-
-//                 <label htmlFor="password">password:</label>
-//                 <input
-//                     type="password"
-//                     name="password"
-//                     id="password"
-//                     value={password}
-//                     onChange={event => setPassword(event.target.value)}
-//                 />
-//                 {errors.password && <div role="alert">{errors.password}</div>}
-
-//                 <br />
-//                 <input
-//                     type="submit"
-//                     value="sign up"
-//                     disabled={
-//                         !fullName.trim() ||
-//                         !username.trim() ||
-//                         !email.trim() ||
-//                         !password.trim()
-//                     }
-//                 />
-//             </form>
-
-//             {/* display email verification result */}
-//             <br />
-//             {verificationLink && (
-//                 <div>
-//                     <p>Signup successful, check your email to verify the account</p>
-//                     {/* <p>
-//                             click <Link to={verificationLink}>here</Link> to verity your email
-//                         </p> */}
-//                 </div>
-//             )}
-//         </div>
-//     )
-// }
-
-// export default SignUp
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import { isEmail } from 'validator';
@@ -289,86 +103,57 @@ const SignUp = () => {
     };
 
     return (
-        <div>
-            <br />
-            <h2>Sign Up</h2>
-
-            <form onSubmit={handleSignUp}>
-                <label htmlFor="fullName">Full name:</label>
-                <input
-                    type="text"
-                    name="fullName"
-                    id="fullName"
-                    value={fullName}
-                    onChange={(event) => {
-                        setFullName(event.target.value);
-                        setErrors((previous) => ({ ...previous, fullName: '' }));
-                    }}
-                />
-                {errors.fullName && <div role="alert">{errors.fullName}</div>}
-                <br />
-
-                <label htmlFor="username">Username:</label>
-                <input
-                    type="text"
-                    name="username"
-                    id="username"
-                    value={username}
-                    onChange={(event) => {
-                        setUsername(event.target.value);
-                        setErrors((previous) => ({ ...previous, username: '' }));
-                    }}
-                />
-                {errors.username && <div role="alert">{errors.username}</div>}
-                <br />
-
-                <label htmlFor="email">Email:</label>
-                <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    value={email}
-                    onChange={(event) => {
-                        setEmail(event.target.value);
-                        setErrors((previous) => ({ ...previous, email: '' }));
-                    }}
-                />
-                {errors.email && <div role="alert">{errors.email}</div>}
-                <br />
-
-                <label htmlFor="password">Password:</label>
-                <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    value={password}
-                    onChange={(event) => {
-                        setPassword(event.target.value);
-                        setErrors((previous) => ({ ...previous, password: '' }));
-                    }}
-                />
-                {errors.password && <div role="alert">{errors.password}</div>}
-                <br />
-
-                <input
-                    type="submit"
-                    value={submitting ? 'Signing up...' : 'Sign up'}
-                    disabled={
-                        submitting ||
-                        !fullName.trim() ||
-                        !username.trim() ||
-                        !email.trim() ||
-                        !password
-                    }
-                />
-            </form>
-
-            {message && (
-                <div className="mt-3" role="status">
-                    {message}
+        <main className="auth-page">
+            <section className="auth-card signup-card">
+                <div className="auth-heading">
+                    <p className="eyebrow dark">CREATE YOUR ACCOUNT</p>
+                    <h1>Sign up</h1>
+                    <p>Create an account to order for collection or delivery and keep your order history together.</p>
                 </div>
-            )}
-        </div>
+
+                <form onSubmit={handleSignUp} className="auth-form">
+                    <div className="form-field">
+                        <label htmlFor="fullName">Full name</label>
+                        <input type="text" name="fullName" id="fullName" autoComplete="name" value={fullName}
+                            onChange={(event) => { setFullName(event.target.value); setErrors((previous) => ({ ...previous, fullName: '' })); }}
+                            placeholder="Your full name" />
+                        {errors.fullName && <div className="form-error" role="alert">{errors.fullName}</div>}
+                    </div>
+
+                    <div className="form-field">
+                        <label htmlFor="username">Username</label>
+                        <input type="text" name="username" id="username" autoComplete="username" value={username}
+                            onChange={(event) => { setUsername(event.target.value); setErrors((previous) => ({ ...previous, username: '' })); }}
+                            placeholder="Choose a username" />
+                        {errors.username && <div className="form-error" role="alert">{errors.username}</div>}
+                    </div>
+
+                    <div className="form-field">
+                        <label htmlFor="email">Email address</label>
+                        <input type="email" name="email" id="email" autoComplete="email" value={email}
+                            onChange={(event) => { setEmail(event.target.value); setErrors((previous) => ({ ...previous, email: '' })); }}
+                            placeholder="you@example.com" />
+                        {errors.email && <div className="form-error" role="alert">{errors.email}</div>}
+                    </div>
+
+                    <div className="form-field">
+                        <label htmlFor="password">Password</label>
+                        <input type="password" name="password" id="password" autoComplete="new-password" value={password}
+                            onChange={(event) => { setPassword(event.target.value); setErrors((previous) => ({ ...previous, password: '' })); }}
+                            placeholder="8–40 characters" />
+                        {errors.password && <div className="form-error" role="alert">{errors.password}</div>}
+                        <small className="field-hint">Use upper and lower case letters, a number and a symbol.</small>
+                    </div>
+
+                    <button className="auth-submit" type="submit" disabled={submitting || !fullName.trim() || !username.trim() || !email.trim() || !password}>
+                        {submitting ? 'Signing up...' : 'Sign up'}
+                    </button>
+                </form>
+
+                {message && <div className="auth-message" role="status">{message}</div>}
+                <p className="auth-switch">Already have an account? <a href="/signin">Sign in</a></p>
+            </section>
+        </main>
     );
 };
 

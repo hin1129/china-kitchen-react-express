@@ -1318,12 +1318,14 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
                             }
 
 
+                            <div className="order-notes-box">
+                                <div className="order-notes-heading">
+                                    <h3>Allergies &amp; requests</h3>
+                                    <p>Add any allergy information or special preparation requests for this order.</p>
+                                </div>
                             {/* =========================
                                 ALLERGIES
                             ========================= */}
-
-                            <hr />
-
 
                             <Form.Group className="mb-3">
 
@@ -1434,6 +1436,8 @@ const ShoppingCart = ({ cartItems, setCartItems, logInState }) => {
 
                             </Form.Group>
 
+
+                            </div>
 
                             {/* =========================
                                 TOTAL
